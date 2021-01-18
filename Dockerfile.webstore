@@ -26,7 +26,7 @@ RUN apt-get update && \
 	rm -rf /var/lib/apt/lists/* /var/tmp/* /tmp/*
 
 # ------------------------------------------------------------------------------
-# Install scripts and configuration files
+# Install scripts and binaries
 COPY app/app.webstore.sh /app/app.sh
 COPY --from=build /src/webstore.exe /app/
 
