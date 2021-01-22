@@ -54,22 +54,22 @@ char* srci_get_browser_auth(srci_t *ri)
 
 int srci_browser_requests_text(srci_t *ri)
 {
-	if(!ri->accept) return 0;
-	if(strcasecmp(ri->accept, MIMETYPETXTPLAINSTR) == 0) return 1;
+	if(!ri->accept) { return 0; }
+	if(strcasecmp(ri->accept, MIMETYPETXTPLAINSTR) == 0) { return 1; }
 	return 0;
 }
 
 int srci_browser_requests_xml(srci_t *ri)
 {
-	if(!ri->accept) return 0;
-	if(strcasecmp(ri->accept, MIMETYPEAPPXMLSTR) == 0) return 1;
+	if(!ri->accept) { return 0; }
+	if(strcasecmp(ri->accept, MIMETYPEAPPXMLSTR) == 0) { return 1; }
 	return 0;
 }
 
 int srci_browser_requests_json(srci_t *ri)
 {
-	if(!ri->accept) return 0;
-	if(strcasecmp(ri->accept, MIMETYPEAPPJSONSTR) == 0) return 1;
+	if(!ri->accept) { return 0; }
+	if(strcasecmp(ri->accept, MIMETYPEAPPJSONSTR) == 0) { return 1; }
 	return 0;
 }
 
@@ -80,13 +80,13 @@ int srci_get_method_type(srci_t *ri)
 
 void srci_set_response_content_type(srci_t *ri, char *ct)
 {
-	if(ri->content_type) free(ri->content_type);
+	if(ri->content_type) { free(ri->content_type); }
 	ri->content_type = strdup(ct);
 }
 
 void srci_set_response_allow(srci_t *ri, char *a)
 {
-	if(ri->allow) free(ri->allow);
+	if(ri->allow) { free(ri->allow); }
 	ri->allow = strdup(a);
 }
 
@@ -120,10 +120,10 @@ static char* client_ip_str (struct MHD_Connection *connection)
 	char ip_str[128];
 
 	ci = MHD_get_connection_info (connection, MHD_CONNECTION_INFO_CLIENT_ADDRESS);
-	if(!ci) return NULL;
+	if(!ci) { return NULL; }
 
 	in = (struct sockaddr_in *)ci->client_addr;
-	if(!in) return NULL;
+	if(!in) { return NULL; }
 
 	switch(in->sin_family) {
 		case AF_INET:
@@ -209,22 +209,22 @@ const char *upload_data, size_t *upload_data_size, void **con_cls)
 	const char *auth_header;
 	const char *content_length_header;
 
-	if(!url || !method || !version) return MHD_NO;
+	if(!url || !method || !version) { return MHD_NO; }
 
 	if (!ri) {
 #ifdef DEBUG
 		printf ("New %s request for %s using version %s\n", method, url, version);
 #endif
 		ri = calloc (1, sizeof(srci_t));
-		if(!ri) return MHD_NO;
+		if(!ri) { return MHD_NO; }
 		*con_cls = (void *)ri;
 
 		ri->url = strdup(url);
 		ri->urllen = strlen(url);
-		if(ri->urllen < ws->min_url_len) return MHD_NO;
-		if(ri->urllen > ws->max_url_len) return MHD_NO;
-		if(strlen(method) < 3) return MHD_NO;
-		if(strlen(method) > 7) return MHD_NO;
+		if(ri->urllen < ws->min_url_len) { return MHD_NO; }
+		if(ri->urllen > ws->max_url_len) { return MHD_NO; }
+		if(strlen(method) < 3) { return MHD_NO; }
+		if(strlen(method) > 7) { return MHD_NO; }
 
 		ri->ip = client_ip_str(connection);
 
@@ -236,7 +236,7 @@ const char *upload_data, size_t *upload_data_size, void **con_cls)
 		content_length_header = MHD_lookup_connection_value (connection, MHD_HEADER_KIND, HDRCLSTR);
 		if(content_length_header) {
 			ri->content_length = atol(content_length_header);
-			if(ri->content_length > ws->max_content_length) return MHD_NO;
+			if(ri->content_length > ws->max_content_length) { return MHD_NO; }
 		}
 
 		// Process Method
@@ -272,7 +272,7 @@ const char *upload_data, size_t *upload_data_size, void **con_cls)
 
 	// We should only get here after post processing is done
 	// So now we check the length and make sure it matches
-	if(ri->post_data_len < ri->content_length) return MHD_NO;
+	if(ri->post_data_len < ri->content_length) { return MHD_NO; }
 
 #ifdef SEAREST_UPLOAD_DEBUG
 	if(ri->post_data) printf ("Content: %s \n", ri->post_data);
@@ -296,8 +296,8 @@ const char *upload_data, size_t *upload_data_size, void **con_cls)
 	}
 
 #ifdef DEBUG
-	if(ret == MHD_NO)	fprintf (stderr, "Refusing Connection!\n");
-	//else				fprintf (stderr, "Returning %d!\n", ri->return_code);
+	if(ret == MHD_NO)	{ fprintf (stderr, "Refusing Connection!\n"); }
+	//else				{ fprintf (stderr, "Returning %d!\n", ri->return_code); }
 #endif
 
 	return ret;
@@ -306,16 +306,16 @@ const char *upload_data, size_t *upload_data_size, void **con_cls)
 static void uhd_request_completed (void *user_data, struct MHD_Connection *connection, void **con_cls, enum MHD_RequestTerminationCode toe)
 {
 	srci_t *ri = *con_cls;
-	if (!ri) return;
+	if (!ri) { return; }
 
-	if(ri->ip) free(ri->ip);
-	if(ri->url) free(ri->url);
-	if(ri->accept) free(ri->accept);
-	if(ri->auth) free(ri->auth);
-	if(ri->post_data) free(ri->post_data);
-	if(ri->content_type) free(ri->content_type);
-	if(ri->allow) free(ri->allow);
-	if(ri->return_page) free(ri->return_page);
+	if(ri->ip) { free(ri->ip); }
+	if(ri->url) { free(ri->url); }
+	if(ri->accept) { free(ri->accept); }
+	if(ri->auth) { free(ri->auth); }
+	if(ri->post_data) { free(ri->post_data); }
+	if(ri->content_type) { free(ri->content_type); }
+	if(ri->allow) { free(ri->allow); }
+	if(ri->return_page) { free(ri->return_page); }
 	free(ri);
 	*con_cls = NULL;   
 }
@@ -346,8 +346,8 @@ static int uhd_client_connect (void *user_data, const struct sockaddr *addr, soc
 	char ip_str[128];
 	char *ip;
 
-	if(!addr) return MHD_NO;	//this should never happen
-	if(!ws->addr_cb) return MHD_YES;
+	if(!addr) { return MHD_NO; }	//this should never happen
+	if(!ws->addr_cb) { return MHD_YES; }
 
 	switch(in->sin_family) {
 		case AF_INET:
@@ -386,71 +386,15 @@ int searest_start(sri_t *ws, char *ip4addr, unsigned short port, void *sri_user_
 	// https://www.gnu.org/software/libmicrohttpd/manual/libmicrohttpd.html
 	// https://www.gnu.org/software/libmicrohttpd/manual/html_node/microhttpd_002dconst.html
 
-	if(searest_node_count(ws) == 0) {
-		return 1;
-	}
+	if(searest_node_count(ws) == 0) { return 1; }
 
 	ws->sri_user_data = sri_user_data;
 
 	memset(&server, 0, sizeof(server));
 	server.sin_family = AF_INET;
 	server.sin_port = htons(port);
-	if(!ip4addr) server.sin_addr.s_addr = INADDR_ANY;
-	else		inet_pton(AF_INET, ip4addr, &server.sin_addr);
-
-#if 0
-//	Consider MHD_OPTION_ARRAY here
-	struct MHD_OptionItem mhdops[] = {
-		{ MHD_OPTION_SOCK_ADDR, &server, NULL },
-		{ MHD_OPTION_URI_LOG_CALLBACK, &uhd_logger, sri_user_data },
-		{ MHD_OPTION_NOTIFY_COMPLETED, &uhd_request_completed, sri_user_data },
-		{ MHD_OPTION_CONNECTION_TIMEOUT, ws->inactivity_timeout, NULL },
-		{ MHD_OPTION_CONNECTION_LIMIT, ws->conn_limit, NULL },
-		{ MHD_OPTION_HTTPS_MEM_CERT, ws->https_cert, NULL },
-		{ MHD_OPTION_HTTPS_MEM_KEY, ws->https_key, NULL },
-		{ MHD_OPTION_HTTPS_MEM_TRUST, ws->https_ca, NULL },
-		{ MHD_OPTION_END, 0, NULL }
-	};
-#endif
-
-#if 0
-	i=0;
-	mhdops[i].option = MHD_OPTION_URI_LOG_CALLBACK;
-	mhdops[i].value = (intptr_t)&uhd_logger;
-	mhdops[i++].ptr_value = sri_user_data;
-
-	mhdops[i].option = MHD_OPTION_NOTIFY_COMPLETED;
-	mhdops[i].value = (intptr_t)&uhd_request_completed;
-	mhdops[i++].ptr_value = sri_user_data;
-
-	mhdops[i].option = MHD_OPTION_CONNECTION_TIMEOUT;
-	mhdops[i].value = ws->inactivity_timeout;
-	mhdops[i++].ptr_value = NULL;
-
-	if(ws->https_cert && ws->https_key) {
-		mhdops[i].option = MHD_OPTION_HTTPS_MEM_CERT;
-		mhdops[i].value = (intptr_t)ws->https_cert;
-		mhdops[i++].ptr_value = NULL;
-
-		mhdops[i].option = MHD_OPTION_HTTPS_MEM_KEY;
-		mhdops[i].value = (intptr_t)ws->https_key;
-		mhdops[i++].ptr_value = NULL;
-
-		if(ws->https_ca) {
-			mhdops[i].option = MHD_OPTION_HTTPS_MEM_TRUST;
-			mhdops[i].value = (intptr_t)ws->https_ca;
-			mhdops[i++].ptr_value = NULL;
-		}
-	}
-
-	mhdops[i].option = MHD_OPTION_END;
-	mhdops[i].value = 0;
-	mhdops[i++].ptr_value = NULL;
-
-	mhdops[i].option = MHD_OPTION_END;
-	mhdops[i].value = 0;
-	mhdops[i++].ptr_value = NULL;
-#endif
+	if(!ip4addr) { server.sin_addr.s_addr = INADDR_ANY; }
+	else { inet_pton(AF_INET, ip4addr, &server.sin_addr); }
 
 #ifdef USEMHDOPTS
 	i=0; mhdops=NULL;
@@ -550,7 +494,7 @@ int searest_start(sri_t *ws, char *ip4addr, unsigned short port, void *sri_user_
 	}
 #endif
 
-	if(!ws->mhd_srv) return 2;
+	if(!ws->mhd_srv) { return 2; }
 	return 0;
 }
 
@@ -594,7 +538,7 @@ void searest_set_addr_cb(sri_t *ws, void *func)
 
 void searest_stop(sri_t *ws)
 {
-	if(ws->mhd_srv) MHD_stop_daemon(ws->mhd_srv);
+	if(ws->mhd_srv) { MHD_stop_daemon(ws->mhd_srv); }
 	ws->mhd_srv = NULL;
 }
 
@@ -602,7 +546,7 @@ sri_t* searest_new(int urlmin, int urlmax, size_t contentmax)
 {
 	sri_t *ws = calloc(1, sizeof(sri_t));
 	if(!ws) {
-		fprintf(stderr, "calloc() failed!");
+		fprintf(stderr, "calloc() failed!\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -619,8 +563,8 @@ void searest_del(sri_t *ws)
 {
 	searest_stop(ws);
 	searest_node_destroy_all(ws);
-	if(ws->https_cert) free(ws->https_cert);
-	if(ws->https_key) free(ws->https_key);
-	if(ws->https_ca) free(ws->https_ca);
+	if(ws->https_cert) { free(ws->https_cert); }
+	if(ws->https_key) { free(ws->https_key); }
+	if(ws->https_ca) { free(ws->https_ca); }
 	free(ws);
 }
