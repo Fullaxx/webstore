@@ -28,17 +28,17 @@ Use the following volume option to expose it
 
 ## Server Instructions
 Start redis at 172.17.0.1:6379 \
-Bind webstore to 172.17.0.1:8080 \
+Bind webstore to 172.17.0.1:80 \
 Save log to /srv/docker/webstore/log
 ```
 docker run -d --rm --name redis -p 172.17.0.1:6379:6379 redis
-docker run -d --name webstore -e REDISIP=172.17.0.1 -p 172.17.0.1:8080:8080 -v /srv/docker/webstore/log:/log fullaxx/webstore
+docker run -d --name webstore -e REDISIP=172.17.0.1 -p 172.17.0.1:80:8080 -v /srv/docker/webstore/log:/log fullaxx/webstore
 ```
 Start redis at 172.17.0.1:7777 \
-Bind webstore to 172.17.0.1:8080
+Bind webstore to 172.17.0.1:80
 ```
 docker run -d --rm --name redis -p 172.17.0.1:7777:6379 redis
-docker run -d --name webstore -e REDISIP=172.17.0.1 -e REDISPORT=7777 -p 172.17.0.1:8080:8080 fullaxx/webstore
+docker run -d --name webstore -e REDISIP=172.17.0.1 -e REDISPORT=7777 -p 172.17.0.1:80:8080 fullaxx/webstore
 ```
 
 ## HTTPS Instructions
@@ -63,12 +63,21 @@ fullaxx/webstore
 ## Client Instructions
 In order to use the client, you will need to compile against libcurl and libgcrypt. \
 In Ubuntu, you would install build-essential libcurl4-gnutls-dev and libgcrypt20-dev. \
-After compiling the client source code, you can run the binaries:
 ```
 apt-get install -y build-essential libcurl4-gnutls-dev libgcrypt20-dev
 ./compile_clients.sh
+```
+After compiling the client source code, you can run the binaries:
+```
 WSIP="172.17.0.1"
-PORT="8080"
+PORT="80"
 ./ws_post.exe -H ${WSIP} -P ${PORT} -f LICENSE -a 1
 ./ws_get.exe  -H ${WSIP} -P ${PORT} -t b234ee4d69f5fce4486a80fdaf4a4263
+```
+If your webstore server is running in https mode:
+```
+WSIP="172.17.0.1"
+PORT="443"
+./ws_post.exe -s -H ${WSIP} -P ${PORT} -f LICENSE -a 1
+./ws_get.exe  -s -H ${WSIP} -P ${PORT} -t b234ee4d69f5fce4486a80fdaf4a4263
 ```
