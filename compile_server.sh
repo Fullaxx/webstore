@@ -10,10 +10,10 @@ DBGCFLAGS="${CFLAGS} ${DBG}"
 
 rm -f *.exe *.dbg
 
-gcc ${OPTCFLAGS} webstore*.c getopts.c searest*.c rai.c \
+gcc ${OPTCFLAGS} webstore*.c getopts.c searest*.c rai.c futils.c \
 -lpthread -lmicrohttpd -lhiredis -o webstore.exe
 
-gcc ${DBGCFLAGS} webstore*.c getopts.c searest*.c rai.c \
+gcc ${DBGCFLAGS} webstore*.c getopts.c searest*.c rai.c futils.c \
 -lpthread -lmicrohttpd -lhiredis -o webstore.dbg
 
 strip *.exe

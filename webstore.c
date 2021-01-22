@@ -33,13 +33,16 @@ int g_shutdown = 0;
 
 char *ip = NULL;
 unsigned short http_port = 0;
-int use_threads = 0;
+int g_use_threads = 0;
 
-char *logfile = NULL;
+char *g_logfile = NULL;
 
 char *rsock = NULL;
 char *rip = NULL;
 unsigned short rport = 0;
+
+char *g_certfile = NULL;
+char *g_keyfile = NULL;
 
 #ifdef SRNODECHRONOMETRY
 int alarm_stats = 0;
@@ -74,18 +77,22 @@ int main(int argc, char *argv[])
 	parse_args(argc, argv);
 
 	if(rsock) {
-		webstore_start(ip, http_port, use_threads, rsock, 0);
+		webstore_start(ip, http_port, g_use_threads, rsock, 0, g_certfile, g_keyfile);
 	} else if(rip && (rport > 0)) {
-		webstore_start(ip, http_port, use_threads, rip, rport);
+		webstore_start(ip, http_port, g_use_threads, rip, rport, g_certfile, g_keyfile);
 	} else {
-		fprintf(stderr, "I cant seem to connect to redis!\n");
+		if(!ip) { ip = "*"; }
+		if(!rip) { rip = "*"; }
+		if(!g_certfile) { g_certfile = "NULL"; }
+		if(!g_keyfile) { g_keyfile = "NULL"; }
+		fprintf(stderr, "webstore_start(%s, %u, %d, %s, %u, %s, %s) failed!\n", ip, http_port, g_use_threads, rip, rport, g_certfile, g_keyfile);
 		exit(EXIT_FAILURE);
 	}
 
-	if(logfile) {
-		z = log_open(logfile);
+	if(g_logfile) {
+		z = log_open(g_logfile);
 		if(z) {
-			fprintf(stderr, "log_open(%s) failed!\n", logfile);
+			fprintf(stderr, "log_open(%s) failed!\n", g_logfile);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -110,10 +117,12 @@ int main(int argc, char *argv[])
 
 	webstore_stop();
 	log_close();
-	if(logfile) { free(logfile); }
+	if(g_logfile) { free(g_logfile); }
 	if(rsock) { free(rsock); }
 	if(rip) { free(rip); }
 	if(ip) { free(ip); }
+	if(g_certfile) { free(g_certfile); }
+	if(g_keyfile) { free(g_keyfile); }
 	return 0;
 }
 
@@ -125,6 +134,8 @@ struct options opts[] =
 	{ 4, "log",		"Log events to this file",		"l",  1 },
 	{ 5, "rsock",	"Connect to Redis file socket",	NULL, 1 },
 	{ 6, "rtcp",	"Connect to Redis over tcp",	NULL, 1 },
+	{ 7, "cert",	"Use this HTTPS cert",			NULL, 1 },
+	{ 8, "key",		"Use this HTTPS key",			NULL, 1 },
 #ifdef SRNODECHRONOMETRY
 	{ 9, "stats",	"Show stats on the second",		NULL, 0 },
 #endif
@@ -154,10 +165,10 @@ static void parse_args(int argc, char **argv)
 				http_port = atoi(args);
 				break;
 			case 3:
-				use_threads = 1;
+				g_use_threads = 1;
 				break;
 			case 4:
-				logfile = strdup(args);
+				g_logfile = strdup(args);
 				break;
 			case 5:
 				rsock = strdup(args);
@@ -169,6 +180,12 @@ static void parse_args(int argc, char **argv)
 					rip = strdup(args);
 					rport = atoi(colon+1);
 				}
+				break;
+			case 7:
+				g_certfile = strdup(args);
+				break;
+			case 8:
+				g_keyfile = strdup(args);
 				break;
 #ifdef SRNODECHRONOMETRY
 			case 9:
@@ -196,6 +213,16 @@ static void parse_args(int argc, char **argv)
 
 	if(!http_port) {
 		fprintf(stderr, "I need a port to listen on! (Fix with -P)\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if(g_certfile && !g_keyfile) {
+		fprintf(stderr, "I need a key to enable HTTPS operations! (Fix with --key)\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if(!g_certfile && g_keyfile) {
+		fprintf(stderr, "I need a cert to enable HTTPS operations! (Fix with --cert)\n");
 		exit(EXIT_FAILURE);
 	}
 }

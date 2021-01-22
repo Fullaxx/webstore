@@ -24,6 +24,7 @@
 #include "getopts.h"
 #include "z85.h"
 #include "webstore.h"
+#include "webstore_url.h"
 #include "curl_ops.h"
 
 static void parse_args(int argc, char **argv);
@@ -32,6 +33,7 @@ char *g_host = NULL;
 unsigned short g_port = 0;
 char *g_token = NULL;
 char *g_filename = NULL;
+int g_secure = 0;
 
 // Take the server response and save it to file or print to stdout
 static void decode_page(respdata_t *rdata)
@@ -60,30 +62,6 @@ bail:
 	free(dec);
 }
 
-// Create the URL and autodetect which REST NODE to request based on token
-static char* create_url(char *host, unsigned short port, char *token)
-{
-	char *hashtag = NULL;
-	char url[2048];
-
-	switch(strlen(token)) {
-		case HASHMD5LEN:    hashtag="md5";    break;
-		case HASHSHA1LEN:   hashtag="sha1";   break;
-		case HASHSHA224LEN: hashtag="sha224"; break;
-		case HASHSHA256LEN: hashtag="sha256"; break;
-		case HASHSHA384LEN: hashtag="sha384"; break;
-		case HASHSHA512LEN: hashtag="sha512"; break;
-		default: fprintf(stderr, "Token is incorrect!\n"); break;
-	}
-
-	if(hashtag) {
-		snprintf(&url[0], sizeof(url), "http://%s:%u/store/%s/%s", host, port, hashtag, token);
-		return strdup(url);
-	}
-
-	return NULL;
-}
-
 int main(int argc, char *argv[])
 {
 	int z, retval = 0;
@@ -93,7 +71,7 @@ int main(int argc, char *argv[])
 	memset(&rdata, 0, sizeof(respdata_t));
 	parse_args(argc, argv);
 
-	url = create_url(g_host, g_port, g_token);
+	url = create_url(g_host, g_port, g_token, g_secure);
 	if(!url) {
 		fprintf(stderr, "create_url() failed!\n");
 		return 1;
@@ -126,6 +104,7 @@ struct options opts[] =
 	{ 2, "port",	"Port to Connect to",		"P", 1 },
 	{ 3, "token",	"Hash Token to request",	"t", 1 },
 	{ 4, "file",	"Save data to file",		"f", 1 },
+	{ 5, "https",	"Use HTTPS",				"s", 0 },
 	{ 0, NULL,		NULL,						NULL, 0 }
 };
 
@@ -156,6 +135,9 @@ static void parse_args(int argc, char **argv)
 				break;
 			case 4:
 				g_filename = strdup(args);
+				break;
+			case 5:
+				g_secure = 1;
 				break;
 			default:
 				fprintf(stderr, "Unexpected getopts Error! (%d)\n", c);

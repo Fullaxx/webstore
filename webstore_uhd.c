@@ -22,6 +22,7 @@
 
 #include "webstore.h"
 #include "webstore_ops.h"
+#include "futils.h"
 
 sri_t *g_srv = NULL;
 wsrt_t g_rt;
@@ -126,7 +127,21 @@ static int ws_addr_check(char *inc_ip, void *user_data)
 	return SR_IP_ACCEPT;
 }
 
-void webstore_start(char *http_ip, unsigned short http_port, int use_threads, char *rdest, unsigned short rport)
+static void activate_https(char *certfile, char *keyfile)
+{
+	char *cert, *key;
+
+	cert = get_file(certfile);
+	if(!cert) { exit(EXIT_FAILURE); }
+	key = get_file(keyfile);
+	if(!key) { exit(EXIT_FAILURE); }
+	searest_set_https_cert(g_srv, cert);
+	searest_set_https_key(g_srv, key);
+	free(cert);
+	free(key);
+}
+
+void webstore_start(char *http_ip, unsigned short http_port, int use_threads, char *rdest, unsigned short rport, char *certfile, char *keyfile)
 {
 	int z;
 
@@ -152,6 +167,8 @@ void webstore_start(char *http_ip, unsigned short http_port, int use_threads, ch
 	searest_node_add(g_srv, "/store/sha256/",	&sha256_node, NULL);
 	searest_node_add(g_srv, "/store/sha384/",	&sha384_node, NULL);
 	searest_node_add(g_srv, "/store/sha512/",	&sha512_node, NULL);
+
+	if(certfile && keyfile) { activate_https(certfile, keyfile); }
 
 	searest_set_addr_cb(g_srv, &ws_addr_check);
 	if(use_threads == 0) searest_set_internal_select(g_srv);

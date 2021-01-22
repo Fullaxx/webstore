@@ -41,6 +41,25 @@ docker run -d --rm --name redis -p 172.17.0.1:7777:6379 redis
 docker run -d --name webstore -e REDISIP=172.17.0.1 -e REDISPORT=7777 -p 172.17.0.1:8080:8080 fullaxx/webstore
 ```
 
+## HTTPS Instructions
+In order to enable https mode, you must provide the key/certificate pair under /cert \
+Use the following options to provide the files under /cert
+```
+-e CERTFILE=cert.pem \
+-e KEYFILE=privkey.pem \
+-v /srv/docker/mycerts:/cert
+```
+A full https example with certbot certs:
+```
+docker run -d --rm --name redis -p 172.17.0.1:6379:6379 redis
+docker run -d --name webstore \
+-p 172.17.0.1:443:8080 -e REDISIP=172.17.0.1 \
+-e CERTFILE=config/live/webstore.mydomain.com/fullchain.pem \
+-e KEYFILE=config/live/webstore.mydomain.com/privkey.pem \
+-v /srv/docker/certbot:/cert \
+fullaxx/webstore
+```
+
 ## Client Instructions
 In order to use the client, you will need to compile against libcurl and libgcrypt. \
 In Ubuntu, you would install build-essential libcurl4-gnutls-dev and libgcrypt20-dev. \

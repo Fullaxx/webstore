@@ -27,6 +27,7 @@
 #include "getopts.h"
 #include "z85.h"
 #include "webstore.h"
+#include "webstore_url.h"
 #include "curl_ops.h"
 #include "gchash.h"
 
@@ -41,6 +42,7 @@ char *g_token = NULL;
 int g_verbosity = 1;
 size_t g_msglen = 0;
 off_t g_filesize = 0;
+int g_secure = 0;
 
 static int valid_token(char *token)
 {
@@ -54,30 +56,6 @@ static int valid_token(char *token)
 	}
 
 	return 0;
-}
-
-// Create the URL and autodetect which REST NODE to request based on token
-static char* create_url(char *host, unsigned short port, char *token)
-{
-	char *hashtag = NULL;
-	// char url[2083];
-	char url[2048];
-
-	switch(strlen(token)) {
-		case HASHMD5LEN:    hashtag="md5";    break;
-		case HASHSHA1LEN:   hashtag="sha1";   break;
-		case HASHSHA224LEN: hashtag="sha224"; break;
-		case HASHSHA256LEN: hashtag="sha256"; break;
-		case HASHSHA384LEN: hashtag="sha384"; break;
-		case HASHSHA512LEN: hashtag="sha512"; break;
-	}
-
-	if(hashtag) {
-		snprintf(&url[0], sizeof(url), "http://%s:%u/store/%s/%s", host, port, hashtag, token);
-		return strdup(url);
-	}
-
-	return NULL;
 }
 
 // This must be free()'d
@@ -103,7 +81,7 @@ static char* encode_msg_and_post(char *host, unsigned short port, int alg, char 
 	else { token = create_token(alg, msg, len); }
 	if(!token) { goto bail; }
 
-	url = create_url(host, port, token);
+	url = create_url(host, port, token, g_secure);
 	if(!url) {
 		fprintf(stderr, "Invalid URL!\n");
 		goto bail;
@@ -203,6 +181,7 @@ struct options opts[] =
 	{ 4, "file",	"File to encode and post",		"f", 1 },
 	{ 5, "msg",		"Message to encode and post",	"m", 1 },
 	{ 6, "token",	"Use this token when posting",	"t", 1 },
+	{ 7, "https",	"Use HTTPS",					"s", 0 },
 	{ 8, "quiet",	"Decrease verbosity",			"q", 0 },
 	{ 9, "verbose",	"Increase verbosity",			"v", 0 },
 	{ 0, NULL,		NULL,							NULL, 0 }
@@ -241,6 +220,9 @@ static void parse_args(int argc, char **argv)
 				break;
 			case 6:
 				g_token = strdup(args);
+				break;
+			case 7:
+				g_secure = 1;
 				break;
 			case 8:
 				g_verbosity = 0;
