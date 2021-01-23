@@ -31,18 +31,12 @@ static void parse_args(int argc, char **argv);
 int g_redis_dissappeared = 0;
 int g_shutdown = 0;
 
-char *ip = NULL;
-unsigned short http_port = 0;
-int g_use_threads = 0;
+char *g_rsock = NULL;
+char *g_rip = NULL;
+unsigned short g_rport = 0;
 
+srv_opts_t g_so;
 char *g_logfile = NULL;
-
-char *rsock = NULL;
-char *rip = NULL;
-unsigned short rport = 0;
-
-char *g_certfile = NULL;
-char *g_keyfile = NULL;
 
 #ifdef SRNODECHRONOMETRY
 int alarm_stats = 0;
@@ -74,20 +68,9 @@ int main(int argc, char *argv[])
 {
 	int z;
 
+	memset(&g_so, 0, sizeof(srv_opts_t));
+	g_so.max_post_data_size = (20*1024*1024);
 	parse_args(argc, argv);
-
-	if(rsock) {
-		webstore_start(ip, http_port, g_use_threads, rsock, 0, g_certfile, g_keyfile);
-	} else if(rip && (rport > 0)) {
-		webstore_start(ip, http_port, g_use_threads, rip, rport, g_certfile, g_keyfile);
-	} else {
-		if(!ip) { ip = "*"; }
-		if(!rip) { rip = "*"; }
-		if(!g_certfile) { g_certfile = "NULL"; }
-		if(!g_keyfile) { g_keyfile = "NULL"; }
-		fprintf(stderr, "webstore_start(%s, %u, %d, %s, %u, %s, %s) failed!\n", ip, http_port, g_use_threads, rip, rport, g_certfile, g_keyfile);
-		exit(EXIT_FAILURE);
-	}
 
 	if(g_logfile) {
 		z = log_open(g_logfile);
@@ -95,6 +78,18 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "log_open(%s) failed!\n", g_logfile);
 			exit(EXIT_FAILURE);
 		}
+	}
+
+	if(g_rsock) {
+		g_so.rdest = g_rsock;
+		webstore_start(&g_so);
+	} else if(g_rip && (g_rport > 0)) {
+		g_so.rdest = g_rip;
+		g_so.rport = g_rport;
+		webstore_start(&g_so);
+	} else {
+		fprintf(stderr, "webstore_start() failed!\n");
+		exit(EXIT_FAILURE);
 	}
 
 	signal(SIGINT,	sig_handler);
@@ -108,21 +103,24 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-	z=0;
+	z=0;	// Wait for the sweet release of death
 	while(!g_shutdown && !g_redis_dissappeared) {
 		if(z>999) { z=0; }
 		usleep(1000);
 		z++;
 	}
 
+	// Stop Services
 	webstore_stop();
 	log_close();
+
+	// Unnecessary Clean Up
 	if(g_logfile) { free(g_logfile); }
-	if(rsock) { free(rsock); }
-	if(rip) { free(rip); }
-	if(ip) { free(ip); }
-	if(g_certfile) { free(g_certfile); }
-	if(g_keyfile) { free(g_keyfile); }
+	if(g_rsock) { free(g_rsock); }
+	if(g_rip) { free(g_rip); }
+	if(g_so.http_ip) { free(g_so.http_ip); }
+	if(g_so.certfile) { free(g_so.certfile); }
+	if(g_so.keyfile) { free(g_so.keyfile); }
 	return 0;
 }
 
@@ -136,8 +134,9 @@ struct options opts[] =
 	{ 6, "rtcp",	"Connect to Redis over tcp",	NULL, 1 },
 	{ 7, "cert",	"Use this HTTPS cert",			NULL, 1 },
 	{ 8, "key",		"Use this HTTPS key",			NULL, 1 },
+	{ 9, "dsize",	"Set max POST data size",		NULL, 1 },
 #ifdef SRNODECHRONOMETRY
-	{ 9, "stats",	"Show stats on the second",		NULL, 0 },
+	{ 10, "stats",	"Show stats every second",		NULL, 0 },
 #endif
 	{ 0, NULL,		NULL,							NULL, 0 }
 };
@@ -159,36 +158,39 @@ static void parse_args(int argc, char **argv)
 				exit(EXIT_FAILURE);
 				break;
 			case 1:
-				ip = strdup(args);
+				g_so.http_ip = strdup(args);
 				break;
 			case 2:
-				http_port = atoi(args);
+				g_so.http_port = atoi(args);
 				break;
 			case 3:
-				g_use_threads = 1;
+				g_so.use_threads = 1;
 				break;
 			case 4:
 				g_logfile = strdup(args);
 				break;
 			case 5:
-				rsock = strdup(args);
+				g_rsock = strdup(args);
 				break;
 			case 6:
 				colon = strchr(args, ':');
 				if(colon) {
 					*colon = 0;
-					rip = strdup(args);
-					rport = atoi(colon+1);
+					g_rip = strdup(args);
+					g_rport = atoi(colon+1);
 				}
 				break;
 			case 7:
-				g_certfile = strdup(args);
+				g_so.certfile = strdup(args);
 				break;
 			case 8:
-				g_keyfile = strdup(args);
+				g_so.keyfile = strdup(args);
+				break;
+			case 9:
+				g_so.max_post_data_size = atol(args);
 				break;
 #ifdef SRNODECHRONOMETRY
-			case 9:
+			case 10:
 				alarm_stats = 1;
 				break;
 #endif
@@ -201,28 +203,33 @@ static void parse_args(int argc, char **argv)
 		free(args);
 	}
 
-	if(!rsock && !rip) {
+	if(!g_rsock && !g_rip) {
 		fprintf(stderr, "I need to connect to redis! (Fix with --rsock/--rtcp)\n");
 		exit(EXIT_FAILURE);
 	}
 
-	if(rip && !rport) {
+	if(g_rip && !g_rport) {
 		fprintf(stderr, "Invalid redis tcp port! (Fix with --rsock IP:PORT)\n");
 		exit(EXIT_FAILURE);
 	}
 
-	if(!http_port) {
+	if(!g_so.http_port) {
 		fprintf(stderr, "I need a port to listen on! (Fix with -P)\n");
 		exit(EXIT_FAILURE);
 	}
 
-	if(g_certfile && !g_keyfile) {
+	if(g_so.certfile && !g_so.keyfile) {
 		fprintf(stderr, "I need a key to enable HTTPS operations! (Fix with --key)\n");
 		exit(EXIT_FAILURE);
 	}
 
-	if(!g_certfile && g_keyfile) {
+	if(!g_so.certfile && g_so.keyfile) {
 		fprintf(stderr, "I need a cert to enable HTTPS operations! (Fix with --cert)\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if(g_so.max_post_data_size < 6) {
+		fprintf(stderr, "POST data size limit is too small! (Fix with --dsize)\n");
 		exit(EXIT_FAILURE);
 	}
 }

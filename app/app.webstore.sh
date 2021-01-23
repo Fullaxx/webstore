@@ -23,7 +23,12 @@ if [ -n "${CERTFILE}" ] && [ -n "${KEYFILE}" ]; then
   KEYARG="--key ${KEYPATH}"
 fi
 
+unset DSIZEARG
+if [ -n "${MAXPOSTSIZE}" ]; then
+  DSIZEARG="--dsize ${MAXPOSTSIZE}"
+fi
+
 exec /app/webstore.exe -P ${HTTPPORT} \
 --rtcp ${REDISIP}:${REDISPORT} \
 -l /log/webstore.log \
-${CERTARG} ${KEYARG}
+${CERTARG} ${KEYARG} ${DSIZEARG}

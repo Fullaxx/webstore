@@ -40,9 +40,14 @@ Bind webstore to 172.17.0.1:80
 docker run -d --rm --name redis -p 172.17.0.1:7777:6379 redis
 docker run -d --name webstore -e REDISIP=172.17.0.1 -e REDISPORT=7777 -p 172.17.0.1:80:8080 fullaxx/webstore
 ```
+The default POST upload data limit is 20 MiB or (20*1024*1024) \
+You can set this to any value with the MAXPOSTSIZE environment variable
+```
+docker run -d --name webstore -e MAXPOSTSIZE=1000000 -e REDISIP=172.17.0.1 -e REDISPORT=6379 -p 172.17.0.1:80:8080 fullaxx/webstore
+```
 
 ## HTTPS Instructions
-In order to enable https mode, you must provide the key/certificate pair under /cert \
+In order to serve up an https socket, you must provide the key/certificate pair under /cert \
 Use the following options to provide the files under /cert
 ```
 -e CERTFILE=cert.pem \

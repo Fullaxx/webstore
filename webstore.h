@@ -19,14 +19,12 @@
 #ifndef __WEBSTORE_H__
 #define __WEBSTORE_H__
 
-#define MAXENCMSGSIZ (10*1024*1024)
-
-#define HASHMD5LEN    (32)
-#define HASHSHA1LEN   (40)
-#define HASHSHA224LEN (56)
-#define HASHSHA256LEN (64)
-#define HASHSHA384LEN (96)
-#define HASHSHA512LEN (128)
+#define HASHMD5LEN    ((128/8)*2)
+#define HASHSHA1LEN   ((160/8)*2)
+#define HASHSHA224LEN ((224/8)*2)
+#define HASHSHA256LEN ((256/8)*2)
+#define HASHSHA384LEN ((384/8)*2)
+#define HASHSHA512LEN ((512/8)*2)
 
 #define HASHMD5    (1)
 #define HASHSHA1   (2)

@@ -27,7 +27,19 @@
 #define REQPERIOD (2)
 #define REQCOUNT (5)
 
-void webstore_start(char *, unsigned short, int, char *, unsigned short, char *, char *);
+typedef struct {
+	char *http_ip;
+	unsigned short http_port;
+	int use_threads;
+	long max_post_data_size;
+	char *certfile;
+	char *keyfile;
+
+	char *rdest;			// Redis Dest
+	unsigned short rport;	// Redis Port
+} srv_opts_t;
+
+void webstore_start(srv_opts_t *);
 void webstore_stop(void);
 
 char*    md5_node(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node_user_data);

@@ -282,18 +282,18 @@ static void parse_args(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 
-		if(g_msglen > MAXENCMSGSIZ) {
+		/*if(g_msglen > MAXENCMSGSIZ) {
 			fprintf(stderr, "Message is too large!\n");
 			exit(EXIT_FAILURE);
-		}
+		}*/
 	}
 
 	if(g_filename) {
 		g_filesize = file_size(g_filename);
-		if(g_filesize > MAXENCMSGSIZ) {
+		/*if(g_filesize > MAXENCMSGSIZ) {
 			fprintf(stderr, "%s is too large!\n", g_filename);
 			exit(EXIT_FAILURE);
-		}
+		}*/
 		if(g_filesize == 0) {
 			fprintf(stderr, "%s is empty!\n", g_filename);
 			exit(EXIT_FAILURE);

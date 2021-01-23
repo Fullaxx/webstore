@@ -127,13 +127,13 @@ static int ws_addr_check(char *inc_ip, void *user_data)
 	return SR_IP_ACCEPT;
 }
 
-static void activate_https(char *certfile, char *keyfile)
+static void activate_https(srv_opts_t *so)
 {
 	char *cert, *key;
 
-	cert = get_file(certfile);
+	cert = get_file(so->certfile);
 	if(!cert) { exit(EXIT_FAILURE); }
-	key = get_file(keyfile);
+	key = get_file(so->keyfile);
 	if(!key) { exit(EXIT_FAILURE); }
 	searest_set_https_cert(g_srv, cert);
 	searest_set_https_key(g_srv, key);
@@ -141,17 +141,17 @@ static void activate_https(char *certfile, char *keyfile)
 	free(key);
 }
 
-void webstore_start(char *http_ip, unsigned short http_port, int use_threads, char *rdest, unsigned short rport, char *certfile, char *keyfile)
+void webstore_start(srv_opts_t *so)
 {
 	int z;
 
 	memset(&g_rt, 0, sizeof(wsrt_t));
 	//memset(&raddrh, 0, sizeof(raddrh));
-	g_rt.multithreaded = use_threads;
-	z = rai_connect(&g_rt.rc, rdest, rport);
+	g_rt.multithreaded = so->use_threads;
+	z = rai_connect(&g_rt.rc, so->rdest, so->rport);
 	if(z) {
-		if(rport) fprintf(stderr, "Failed to connect to %s:%u!\n", rdest, rport);
-		else fprintf(stderr, "Failed to connect to %s!\n", rdest);
+		if(so->rport) { fprintf(stderr, "Failed to connect to %s:%u!\n", so->rdest, so->rport); }
+		else { fprintf(stderr, "Failed to connect to %s!\n", so->rdest); }
 		exit(EXIT_FAILURE);
 	}
 	/*z = rai_connect(&raddrh, redis_sock, 0);
@@ -160,7 +160,7 @@ void webstore_start(char *http_ip, unsigned short http_port, int use_threads, ch
 		exit(EXIT_FAILURE);
 	}*/
 
-	g_srv = searest_new(32+11, 128+14, MAXENCMSGSIZ);
+	g_srv = searest_new(32+11, 128+14, so->max_post_data_size);
 	searest_node_add(g_srv, "/store/md5/",		&md5_node,    NULL);
 	searest_node_add(g_srv, "/store/sha1/",		&sha1_node,   NULL);
 	searest_node_add(g_srv, "/store/sha224/",	&sha224_node, NULL);
@@ -168,14 +168,14 @@ void webstore_start(char *http_ip, unsigned short http_port, int use_threads, ch
 	searest_node_add(g_srv, "/store/sha384/",	&sha384_node, NULL);
 	searest_node_add(g_srv, "/store/sha512/",	&sha512_node, NULL);
 
-	if(certfile && keyfile) { activate_https(certfile, keyfile); }
+	if(so->certfile && so->keyfile) { activate_https(so); }
 
 	searest_set_addr_cb(g_srv, &ws_addr_check);
-	if(use_threads == 0) searest_set_internal_select(g_srv);
-	z = searest_start(g_srv, http_ip, http_port, &g_rt);
+	if(so->use_threads == 0) searest_set_internal_select(g_srv);
+	z = searest_start(g_srv, so->http_ip, so->http_port, &g_rt);
 	if(z) {
-		if(!http_ip) { http_ip="*"; }
-		fprintf(stderr, "searest_start() failed to bind to %s:%u!\n", http_ip, http_port);
+		if(!so->http_ip) { so->http_ip="*"; }
+		fprintf(stderr, "searest_start() failed to bind to %s:%u!\n", so->http_ip, so->http_port);
 		exit(EXIT_FAILURE);
 	}
 }
