@@ -28,12 +28,12 @@ static char* create_url(char *host, unsigned short port, char *token, int secure
 	char url[2048];
 
 	switch(strlen(token)) {
-		case HASHMD5LEN:    hashtag="md5";    break;
-		case HASHSHA1LEN:   hashtag="sha1";   break;
-		case HASHSHA224LEN: hashtag="sha224"; break;
-		case HASHSHA256LEN: hashtag="sha256"; break;
-		case HASHSHA384LEN: hashtag="sha384"; break;
-		case HASHSHA512LEN: hashtag="sha512"; break;
+		case HASHLEN128: hashtag="128";    break;
+		case HASHLEN160: hashtag="160";   break;
+		case HASHLEN224: hashtag="224"; break;
+		case HASHLEN256: hashtag="256"; break;
+		case HASHLEN384: hashtag="384"; break;
+		case HASHLEN512: hashtag="512"; break;
 		default:
 			fprintf(stderr, "Token is incorrect!\n");
 			return NULL;

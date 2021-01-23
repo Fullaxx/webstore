@@ -25,6 +25,13 @@
 #define WEBSTORE_USING_SECURE_MEMORY
 #define WEBSTORE_SECMEM_SIZE (65536)
 
+#define GCALG128 (GCRY_MD_MD5)
+#define GCALG160 (GCRY_MD_SHA1)
+#define GCALG224 (GCRY_MD_SHA224)
+#define GCALG256 (GCRY_MD_SHA256)
+#define GCALG384 (GCRY_MD_SHA384)
+#define GCALG512 (GCRY_MD_SHA512)
+
 char* create_token(int, char *, size_t);
 int ws_gcinit(char *);
 

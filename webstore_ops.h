@@ -42,12 +42,12 @@ typedef struct {
 void webstore_start(srv_opts_t *);
 void webstore_stop(void);
 
-char*    md5_node(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node_user_data);
-char*   sha1_node(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node_user_data);
-char* sha224_node(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node_user_data);
-char* sha256_node(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node_user_data);
-char* sha384_node(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node_user_data);
-char* sha512_node(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node_user_data);
+char* node128(char *, int, srci_t *, void *, void *);
+char* node160(char *, int, srci_t *, void *, void *);
+char* node224(char *, int, srci_t *, void *, void *);
+char* node256(char *, int, srci_t *, void *, void *);
+char* node384(char *, int, srci_t *, void *, void *);
+char* node512(char *, int, srci_t *, void *, void *);
 
 // WebStore Runtime data
 typedef struct {

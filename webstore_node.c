@@ -204,14 +204,14 @@ static char* post(wsreq_t *req, wsrt_t *rt, srci_t *ri)
 	//return hash;
 }
 
-char* md5_node(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node_user_data)
+char* node128(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node_user_data)
 {
 	wsreq_t req;
 	wsrt_t *rt;
 	char *page = NULL;
 
-	req.type = HASHMD5;
-	req.hashlen = HASHMD5LEN;
+	req.type = HASHALG128;
+	req.hashlen = HASHLEN128;
 	req.url = url;
 	req.urllen = urllen;
 	rt = (wsrt_t *)sri_user_data;
@@ -234,14 +234,14 @@ char* md5_node(char *url, int urllen, srci_t *ri, void *sri_user_data, void *nod
 	return page;
 }
 
-char* sha1_node(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node_user_data)
+char* node160(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node_user_data)
 {
 	wsreq_t req;
 	wsrt_t *rt;
 	char *page = NULL;
 
-	req.type = HASHSHA1;
-	req.hashlen = HASHSHA1LEN;
+	req.type = HASHALG160;
+	req.hashlen = HASHLEN160;
 	req.url = url;
 	req.urllen = urllen;
 	rt = (wsrt_t *)sri_user_data;
@@ -264,14 +264,14 @@ char* sha1_node(char *url, int urllen, srci_t *ri, void *sri_user_data, void *no
 	return page;
 }
 
-char* sha224_node(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node_user_data)
+char* node224(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node_user_data)
 {
 	wsreq_t req;
 	wsrt_t *rt;
 	char *page = NULL;
 
-	req.type = HASHSHA224;
-	req.hashlen = HASHSHA224LEN;
+	req.type = HASHALG224;
+	req.hashlen = HASHLEN224;
 	req.url = url;
 	req.urllen = urllen;
 	rt = (wsrt_t *)sri_user_data;
@@ -294,14 +294,14 @@ char* sha224_node(char *url, int urllen, srci_t *ri, void *sri_user_data, void *
 	return page;
 }
 
-char* sha256_node(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node_user_data)
+char* node256(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node_user_data)
 {
 	wsreq_t req;
 	wsrt_t *rt;
 	char *page = NULL;
 
-	req.type = HASHSHA256;
-	req.hashlen = HASHSHA256LEN;
+	req.type = HASHALG256;
+	req.hashlen = HASHLEN256;
 	req.url = url;
 	req.urllen = urllen;
 	rt = (wsrt_t *)sri_user_data;
@@ -324,14 +324,14 @@ char* sha256_node(char *url, int urllen, srci_t *ri, void *sri_user_data, void *
 	return page;
 }
 
-char* sha384_node(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node_user_data)
+char* node384(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node_user_data)
 {
 	wsreq_t req;
 	wsrt_t *rt;
 	char *page = NULL;
 
-	req.type = HASHSHA384;
-	req.hashlen = HASHSHA384LEN;
+	req.type = HASHALG384;
+	req.hashlen = HASHLEN384;
 	req.url = url;
 	req.urllen = urllen;
 	rt = (wsrt_t *)sri_user_data;
@@ -354,14 +354,14 @@ char* sha384_node(char *url, int urllen, srci_t *ri, void *sri_user_data, void *
 	return page;
 }
 
-char* sha512_node(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node_user_data)
+char* node512(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node_user_data)
 {
 	wsreq_t req;
 	wsrt_t *rt;
 	char *page = NULL;
 
-	req.type = HASHSHA512;
-	req.hashlen = HASHSHA512LEN;
+	req.type = HASHALG512;
+	req.hashlen = HASHLEN512;
 	req.url = url;
 	req.urllen = urllen;
 	rt = (wsrt_t *)sri_user_data;

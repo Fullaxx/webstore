@@ -77,12 +77,44 @@ After compiling the client source code, you can run the binaries:
 WSIP="172.17.0.1"
 PORT="80"
 ./ws_post.exe -H ${WSIP} -P ${PORT} -f LICENSE -a 1
-./ws_get.exe  -H ${WSIP} -P ${PORT} -t b234ee4d69f5fce4486a80fdaf4a4263
+./ws_get.exe  -H ${WSIP} -P ${PORT} -t b234ee4d69f5fce4486a80fdaf4a4263 -f LICENSE.copy
+md5sum LICENSE LICENSE.copy
 ```
 If your webstore server is running in https mode:
 ```
 WSIP="172.17.0.1"
 PORT="443"
 ./ws_post.exe -s -H ${WSIP} -P ${PORT} -f LICENSE -a 1
-./ws_get.exe  -s -H ${WSIP} -P ${PORT} -t b234ee4d69f5fce4486a80fdaf4a4263
+./ws_get.exe  -s -H ${WSIP} -P ${PORT} -t b234ee4d69f5fce4486a80fdaf4a4263 -f LICENSE.copy
+md5sum LICENSE LICENSE.copy
+```
+
+## Choosing an Algorithm
+Each webstore server instance has 6 nodes (defined in webstore_uhd.c) to GET/POST data to:
+```
+/store/128/
+/store/160/
+/store/224/
+/store/256/
+/store/384/
+/store/512/
+```
+Each node accepts a token of specific length to use as storage UUID. \
+Currently there are 6 algorithms types (defined in webstore.h) to choose from:
+```
+-a 1 (128 bits)
+-a 2 (160 bits)
+-a 3 (224 bits)
+-a 4 (256 bits)
+-a 5 (384 bits)
+-a 6 (512 bits)
+```
+These algorithm types default to the following algorithms (defined in ghash.h):
+```
+128 bits - md5
+160 bits - sha1
+224 bits - sha224
+256 bits - sha256
+384 bits - sha384
+512 bits - sha512
 ```

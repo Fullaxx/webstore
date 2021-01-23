@@ -19,18 +19,18 @@
 #ifndef __WEBSTORE_H__
 #define __WEBSTORE_H__
 
-#define HASHMD5LEN    ((128/8)*2)
-#define HASHSHA1LEN   ((160/8)*2)
-#define HASHSHA224LEN ((224/8)*2)
-#define HASHSHA256LEN ((256/8)*2)
-#define HASHSHA384LEN ((384/8)*2)
-#define HASHSHA512LEN ((512/8)*2)
+#define HASHLEN128 ((128/8)*2)
+#define HASHLEN160 ((160/8)*2)
+#define HASHLEN224 ((224/8)*2)
+#define HASHLEN256 ((256/8)*2)
+#define HASHLEN384 ((384/8)*2)
+#define HASHLEN512 ((512/8)*2)
 
-#define HASHMD5    (1)
-#define HASHSHA1   (2)
-#define HASHSHA224 (3)
-#define HASHSHA256 (4)
-#define HASHSHA384 (5)
-#define HASHSHA512 (6)
+#define HASHALG128 (1)
+#define HASHALG160 (2)
+#define HASHALG224 (3)
+#define HASHALG256 (4)
+#define HASHALG384 (5)
+#define HASHALG512 (6)
 
 #endif

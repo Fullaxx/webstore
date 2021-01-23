@@ -51,50 +51,17 @@ char* create_token(int alg, char *msg, size_t msglen)
 	// flags = GCRY_MD_FLAG_SECURE; TEST THIS
 	flags = 0;
 	switch(alg) {
-		case HASHMD5:
-			gcalg = GCRY_MD_MD5;
-			err = gcry_md_open (&h, GCRY_MD_MD5, flags);
-			break;
-		case HASHSHA1:
-			gcalg = GCRY_MD_SHA1;
-			err = gcry_md_open (&h, GCRY_MD_SHA1, flags);
-			break;
-		case HASHSHA224:
-			gcalg = GCRY_MD_SHA224;
-			err = gcry_md_open (&h, GCRY_MD_SHA224, flags);
-			break;
-		case HASHSHA256:
-			gcalg = GCRY_MD_SHA256;
-			err = gcry_md_open (&h, GCRY_MD_SHA256, flags);
-			break;
-		case HASHSHA384:
-			gcalg = GCRY_MD_SHA384;
-			err = gcry_md_open (&h, GCRY_MD_SHA384, flags);
-			break;
-		case HASHSHA512:
-			gcalg = GCRY_MD_SHA512;
-			err = gcry_md_open (&h, GCRY_MD_SHA512, flags);
-			break;
+		case HASHALG128: gcalg = GCALG128; break;
+		case HASHALG160: gcalg = GCALG160; break;
+		case HASHALG224: gcalg = GCALG224; break;
+		case HASHALG256: gcalg = GCALG256; break;
+		case HASHALG384: gcalg = GCALG384; break;
+		case HASHALG512: gcalg = GCALG512; break;
 		default: return NULL;
 	}
 
+	err = gcry_md_open (&h, gcalg, flags);
 	if(err) { mygcerr("gcry_md_open()", err); return NULL; }
-
-#if 0
-	//err = gcry_md_open (&h, GCRY_MD_MD5, GCRY_MD_FLAG_SECURE); NEED MORE MEMORY
-	err = gcry_md_open (&h, GCRY_MD_MD5, 0);
-	if(err) { mygcerr("gcry_md_open()", err); return NULL; }
-	err = gcry_md_enable (h, GCRY_MD_SHA1);
-	if(err) { mygcerr("gcry_md_enable()", err); return NULL; }
-	err = gcry_md_enable (h, GCRY_MD_SHA224);
-	if(err) { mygcerr("gcry_md_enable()", err); return NULL; }
-	err = gcry_md_enable (h, GCRY_MD_SHA256);
-	if(err) { mygcerr("gcry_md_enable()", err); return NULL; }
-	err = gcry_md_enable (h, GCRY_MD_SHA384);
-	if(err) { mygcerr("gcry_md_enable()", err); return NULL; }
-	err = gcry_md_enable (h, GCRY_MD_SHA512);
-	if(err) { mygcerr("gcry_md_enable()", err); return NULL; }
-#endif
 
 	gcry_md_write (h, msg, msglen);
 	gcry_md_final (h);

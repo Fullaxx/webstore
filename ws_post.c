@@ -44,20 +44,6 @@ int g_verbosity = 1;
 long g_msglen = 0;
 int g_secure = 0;
 
-static int valid_token(char *token)
-{
-	switch(strlen(token)) {
-		case HASHMD5LEN:    return 1; break;
-		case HASHSHA1LEN:   return 1; break;
-		case HASHSHA224LEN: return 1; break;
-		case HASHSHA256LEN: return 1; break;
-		case HASHSHA384LEN: return 1; break;
-		case HASHSHA512LEN: return 1; break;
-	}
-
-	return 0;
-}
-
 // This must be free()'d
 static char* encode_msg_and_post(char *host, unsigned short port, int alg, char *msg, size_t len)
 {
@@ -127,6 +113,20 @@ int main(int argc, char *argv[])
 	if(g_message)	{ free(g_message); }
 	if(g_token)		{ free(g_token); }
 	return retval;
+}
+
+static int valid_token(char *token)
+{
+	switch(strlen(token)) {
+		case HASHLEN128: return 1; break;
+		case HASHLEN160: return 1; break;
+		case HASHLEN224: return 1; break;
+		case HASHLEN256: return 1; break;
+		case HASHLEN384: return 1; break;
+		case HASHLEN512: return 1; break;
+	}
+
+	return 0;
 }
 
 struct options opts[] = 
@@ -215,7 +215,7 @@ static void parse_args(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 	} else {
-		if((g_alg < HASHMD5) || (g_alg > HASHSHA512)) {
+		if((g_alg < HASHALG128) || (g_alg > HASHALG512)) {
 			fprintf(stderr, "Please choose to an algorithm (Fix with -a)\n");
 			exit(EXIT_FAILURE);
 		}

@@ -36,23 +36,23 @@ void print_avg_nodecb_time(void)
 {
 	long avg;
 
-	avg = searest_node_get_avg_duration(ws, "/store/md5/");
-	if(avg > 0) printf("%6s: %ld\n", "md5", avg);
+	avg = searest_node_get_avg_duration(ws, "/store/128/");
+	if(avg > 0) printf("%6s: %ld\n", "128", avg);
 
-	avg = searest_node_get_avg_duration(ws, "/store/sha1/");
-	if(avg > 0) printf("%6s: %ld\n", "sha1", avg);
+	avg = searest_node_get_avg_duration(ws, "/store/160/");
+	if(avg > 0) printf("%6s: %ld\n", "160", avg);
 
-	avg = searest_node_get_avg_duration(ws, "/store/sha224/");
-	if(avg > 0) printf("%6s: %ld\n", "sha224", avg);
+	avg = searest_node_get_avg_duration(ws, "/store/224/");
+	if(avg > 0) printf("%6s: %ld\n", "224", avg);
 
-	avg = searest_node_get_avg_duration(ws, "/store/sha256/");
-	if(avg > 0) printf("%6s: %ld\n", "sha256", avg);
+	avg = searest_node_get_avg_duration(ws, "/store/256/");
+	if(avg > 0) printf("%6s: %ld\n", "256", avg);
 
-	avg = searest_node_get_avg_duration(ws, "/store/sha384/");
-	if(avg > 0) printf("%6s: %ld\n", "sha384", avg);
+	avg = searest_node_get_avg_duration(ws, "/store/384/");
+	if(avg > 0) printf("%6s: %ld\n", "384", avg);
 
-	avg = searest_node_get_avg_duration(ws, "/store/sha512/");
-	if(avg > 0) printf("%6s: %ld\n", "sha512", avg);
+	avg = searest_node_get_avg_duration(ws, "/store/512/");
+	if(avg > 0) printf("%6s: %ld\n", "512", avg);
 }
 #endif
 
@@ -160,13 +160,13 @@ void webstore_start(srv_opts_t *so)
 		exit(EXIT_FAILURE);
 	}*/
 
-	g_srv = searest_new(32+11, 128+14, so->max_post_data_size);
-	searest_node_add(g_srv, "/store/md5/",		&md5_node,    NULL);
-	searest_node_add(g_srv, "/store/sha1/",		&sha1_node,   NULL);
-	searest_node_add(g_srv, "/store/sha224/",	&sha224_node, NULL);
-	searest_node_add(g_srv, "/store/sha256/",	&sha256_node, NULL);
-	searest_node_add(g_srv, "/store/sha384/",	&sha384_node, NULL);
-	searest_node_add(g_srv, "/store/sha512/",	&sha512_node, NULL);
+	g_srv = searest_new(32+11, 128+11, so->max_post_data_size);
+	searest_node_add(g_srv, "/store/128/",	&node128, NULL);
+	searest_node_add(g_srv, "/store/160/",	&node160, NULL);
+	searest_node_add(g_srv, "/store/224/",	&node224, NULL);
+	searest_node_add(g_srv, "/store/256/",	&node256, NULL);
+	searest_node_add(g_srv, "/store/384/",	&node384, NULL);
+	searest_node_add(g_srv, "/store/512/",	&node512, NULL);
 
 	if(so->certfile && so->keyfile) { activate_https(so); }
 
