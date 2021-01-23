@@ -230,9 +230,9 @@ const char *upload_data, size_t *upload_data_size, void **con_cls)
 
 		// Process Headers
 		accept_header = MHD_lookup_connection_value (connection, MHD_HEADER_KIND, HDRASTR);
-		if(accept_header) ri->accept = strdup(accept_header);
+		if(accept_header) { ri->accept = strdup(accept_header); }
 		auth_header = MHD_lookup_connection_value (connection, MHD_HEADER_KIND, HDRAUTHSTR);
-		if(auth_header) ri->auth = strdup(auth_header);
+		if(auth_header) { ri->auth = strdup(auth_header); }
 		content_length_header = MHD_lookup_connection_value (connection, MHD_HEADER_KIND, HDRCLSTR);
 		if(content_length_header) {
 			ri->content_length = atol(content_length_header);
@@ -240,11 +240,11 @@ const char *upload_data, size_t *upload_data_size, void **con_cls)
 		}
 
 		// Process Method
-		if (strcmp (method, "GET") == 0) ri->method_type = METHOD_GET;
-		else if (strcmp (method, "POST") == 0) ri->method_type = METHOD_POST;
-		else if (strcmp (method, "PUT") == 0) ri->method_type = METHOD_PUT;
-		else if (strcmp (method, "DELETE") == 0) ri->method_type = METHOD_DEL;
-		else if (strcmp (method, "OPTIONS") == 0) ri->method_type = METHOD_OPT;
+		if (strcmp (method, "GET") == 0)			{ ri->method_type = METHOD_GET; }
+		else if (strcmp (method, "POST") == 0)		{ ri->method_type = METHOD_POST; }
+		else if (strcmp (method, "PUT") == 0)		{ ri->method_type = METHOD_PUT; }
+		else if (strcmp (method, "DELETE") == 0)	{ ri->method_type = METHOD_DEL; }
+		else if (strcmp (method, "OPTIONS") == 0)	{ ri->method_type = METHOD_OPT; }
 		else { return MHD_NO; }
 
 		//We need to ask the caller if XXX bytes of upload data is ok 
@@ -261,7 +261,7 @@ const char *upload_data, size_t *upload_data_size, void **con_cls)
 	if(upload_data && *upload_data_size) {
 		size_t blobsize = *upload_data_size;
 		size_t newbufsize = ri->post_data_len + blobsize;
-		if(newbufsize > ri->content_length) return MHD_NO;
+		if(newbufsize > ri->content_length) { return MHD_NO; }
 
 		ri->post_data = realloc(ri->post_data, newbufsize);
 		memcpy(ri->post_data + ri->post_data_len, upload_data, blobsize);
@@ -275,7 +275,7 @@ const char *upload_data, size_t *upload_data_size, void **con_cls)
 	if(ri->post_data_len < ri->content_length) { return MHD_NO; }
 
 #ifdef SEAREST_UPLOAD_DEBUG
-	if(ri->post_data) printf ("Content: %s \n", ri->post_data);
+	if(ri->post_data) { printf ("Content: %s \n", ri->post_data); }
 #endif
 
 	page = process_request(ws, ri, ws->sri_user_data);
@@ -288,9 +288,9 @@ const char *upload_data, size_t *upload_data_size, void **con_cls)
 
 		// This will only work with text, modify this for binary file transfer
 		response = MHD_create_response_from_buffer(strlen(page), page, MHD_RESPMEM_MUST_COPY);
-		if(ri->content_type) MHD_add_response_header(response, HDRCTSTR, ri->content_type);
-		if(ri->allow) MHD_add_response_header(response, "Allow", ri->allow);
-		if(ri->cors) MHD_add_response_header(response, "Access-Control-Allow-Origin", "*");
+		if(ri->content_type) { MHD_add_response_header(response, HDRCTSTR, ri->content_type); }
+		if(ri->allow) { MHD_add_response_header(response, "Allow", ri->allow); }
+		if(ri->cors) { MHD_add_response_header(response, "Access-Control-Allow-Origin", "*"); }
 		ret = MHD_queue_response (connection, ri->return_code, response);
 		MHD_destroy_response (response);
 	}
