@@ -19,6 +19,7 @@
 #ifndef __WEBSTORE_FILEUTILS_H__
 #define __WEBSTORE_FILEUTILS_H__
 
+long file_size(const char *path, int v);
 char* get_file(const char *);
 
 #endif

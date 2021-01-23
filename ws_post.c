@@ -25,6 +25,7 @@
 #include <sys/stat.h>	//stat() S_ISREG()
 
 #include "getopts.h"
+#include "futils.h"
 #include "z85.h"
 #include "webstore.h"
 #include "webstore_url.h"
@@ -40,8 +41,7 @@ char *g_filename = NULL;
 char *g_message = NULL;
 char *g_token = NULL;
 int g_verbosity = 1;
-size_t g_msglen = 0;
-off_t g_filesize = 0;
+long g_msglen = 0;
 int g_secure = 0;
 
 static int valid_token(char *token)
@@ -105,47 +105,16 @@ bail:
 	return token;
 }
 
-static char* encode_file_and_post(char *host, unsigned short port, int alg, char *filename)
-{
-	FILE *f;
-	int num;
-	char *filecontents;
-	char *token = NULL;
-
-	f = fopen(filename, "r");
-	if(!f) {
-		fprintf(stderr, "Could not open %s for reading!\n", filename);
-		return NULL;
-	}
-
-	filecontents = malloc(g_filesize);
-	num = fread(filecontents, g_filesize, 1, f);
-	if(num == 1) {
-		token = encode_msg_and_post(host, port, alg, filecontents, g_filesize);
-	} else {
-		fprintf(stderr, "fread(%s, %lu) failed!\n", filename, g_filesize);
-	}
-	free(filecontents);
-
-	fclose(f);
-	return token;
-}
-
 int main(int argc, char *argv[])
 {
 	int z, retval = 0;
-	char *token = NULL;
+	char *token;
 
 	z = ws_gcinit(WEBSTORE_GCRYPT_MINVERS);
 	if(z != 0) { return 1; }
 	parse_args(argc, argv);
 
-	if(g_filename) {
-		token = encode_file_and_post(g_host, g_port, g_alg, g_filename);
-	} else if(g_message) {
-		token = encode_msg_and_post(g_host, g_port, g_alg, g_message, g_msglen);
-	}
-
+	token = encode_msg_and_post(g_host, g_port, g_alg, g_message, g_msglen);
 	if(token) {
 		if(g_verbosity >= 1) { printf("Token: %s\n", token); }
 		free(token);
@@ -153,24 +122,11 @@ int main(int argc, char *argv[])
 		retval = 1;
 	}
 
-	if(g_host)		free(g_host);
-	if(g_filename)	free(g_filename);
-	if(g_message)	free(g_message);
-	if(g_token)		free(g_token);
+	if(g_host)		{ free(g_host); }
+	if(g_filename)	{ free(g_filename); }
+	if(g_message)	{ free(g_message); }
+	if(g_token)		{ free(g_token); }
 	return retval;
-}
-
-static off_t file_size(char *path)
-{
-	struct stat stat_buf;
-	int stat_err = stat(path, &stat_buf);
-
-	if(stat_err == 0) {
-		if(S_ISREG(stat_buf.st_mode)) {
-			return stat_buf.st_size;
-		}
-	}
-	return 0;
 }
 
 struct options opts[] = 
@@ -266,7 +222,7 @@ static void parse_args(int argc, char **argv)
 	}
 
 	if(g_filename && g_message) {
-		fprintf(stderr, "Please choose to post a file or message (not both)\n");
+		fprintf(stderr, "Please choose to post a file or message, not both (Fix with -f or -m)\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -275,30 +231,17 @@ static void parse_args(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	if(g_message) {
-		g_msglen = strlen(g_message);
-		if(g_msglen < 1) {
-			fprintf(stderr, "Message must not be empty!\n");
-			exit(EXIT_FAILURE);
-		}
-
-		/*if(g_msglen > MAXENCMSGSIZ) {
-			fprintf(stderr, "Message is too large!\n");
-			exit(EXIT_FAILURE);
-		}*/
+	if(g_filename) {
+		g_msglen = file_size(g_filename, 1);
+		if(g_msglen == 0) { fprintf(stderr, "%s is empty!\n", g_filename); }
+		if(g_msglen <= 0) { exit(EXIT_FAILURE); }
+		g_message = get_file(g_filename);
+		if(!g_message) { exit(EXIT_FAILURE); }
 	}
 
-	if(g_filename) {
-		g_filesize = file_size(g_filename);
-		/*if(g_filesize > MAXENCMSGSIZ) {
-			fprintf(stderr, "%s is too large!\n", g_filename);
-			exit(EXIT_FAILURE);
-		}*/
-		if(g_filesize == 0) {
-			fprintf(stderr, "%s is empty!\n", g_filename);
-			exit(EXIT_FAILURE);
-		}
+	if(g_msglen == 0) { g_msglen = strlen(g_message); }
+	if(g_msglen < 1) {
+		fprintf(stderr, "Content must not be empty!\n");
+		exit(EXIT_FAILURE);
 	}
 }
-
-

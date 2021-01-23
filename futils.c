@@ -26,7 +26,7 @@
 
 //off_t is of type (unsigned long int)? - 8 bytes on 64-bit systems
 //what happens to large files on 32-bit systems?
-static long file_size(const char *path, int v)
+long file_size(const char *path, int v)
 {
 	struct stat stat_buf;
 	int stat_ret = stat(path, &stat_buf);

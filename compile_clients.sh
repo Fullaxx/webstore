@@ -21,10 +21,10 @@ ${CURLLIBS} -o ws_get.exe
 gcc ${DBGCFLAGS} ws_get.c curl_ops.c z85.c getopts.c \
 ${CURLLIBS} -o ws_get.dbg
 
-gcc ${OPTCFLAGS} ws_post.c gchash.c curl_ops.c z85.c getopts.c \
+gcc ${OPTCFLAGS} ws_post.c futils.c gchash.c curl_ops.c z85.c getopts.c \
 ${CURLLIBS} ${GCLIBS} -o ws_post.exe
 
-gcc ${DBGCFLAGS} ws_post.c gchash.c curl_ops.c z85.c getopts.c \
+gcc ${DBGCFLAGS} ws_post.c futils.c gchash.c curl_ops.c z85.c getopts.c \
 ${CURLLIBS} ${GCLIBS} -o ws_post.dbg
 
 strip *.exe
