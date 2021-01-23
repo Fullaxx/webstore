@@ -1,5 +1,5 @@
 # webstore
-A web-based arbitrary data storage service that accepts z85 encoded data
+A web-based arbitrary data storage service
 
 ## Base Docker Image
 [Ubuntu](https://hub.docker.com/_/ubuntu) 20.04 (x64)
@@ -100,7 +100,7 @@ Each webstore server instance has 6 nodes (defined in webstore_uhd.c) to GET/POS
 /store/512/
 ```
 Each node accepts a token of specific length to use as storage UUID. \
-Currently there are 6 algorithms types (defined in webstore.h) to choose from:
+Currently there are 6 algorithm types (defined in webstore.h) to choose from:
 ```
 -a 1 (128 bits)
 -a 2 (160 bits)
@@ -117,4 +117,16 @@ These algorithm types default to the following algorithms (defined in ghash.h):
 256 bits - sha256
 384 bits - sha384
 512 bits - sha512
+```
+
+## URL Creation
+Examples of proper URL creation (handled in webstore_url.h) are shown here:
+```
+./ws_post.exe -H ${WSIP} -P ${PORT} -f LICENSE -a 1
+./ws_get.exe  -H ${WSIP} -P ${PORT} -t b234ee4d69f5fce4486a80fdaf4a4263
+http://172.17.0.1:80/store/128/b234ee4d69f5fce4486a80fdaf4a4263
+
+./ws_post.exe -s -H ${WSIP} -P ${PORT} -f LICENSE -a 4
+./ws_get.exe  -s -H ${WSIP} -P ${PORT} -t 8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643
+https://172.17.0.1:443/store/256/8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643
 ```
