@@ -29,7 +29,7 @@ Use the following volume option to expose it
 ## Server Instructions
 Start redis at 172.17.0.1:6379 \
 Bind webstore to 172.17.0.1:80 \
-Save log to /srv/docker/webstore/log
+Save log file to /srv/docker/webstore/log
 ```
 docker run -d --rm --name redis -p 172.17.0.1:6379:6379 redis
 docker run -d --name webstore -e REDISIP=172.17.0.1 -p 172.17.0.1:80:8080 -v /srv/docker/webstore/log:/log fullaxx/webstore
@@ -40,7 +40,7 @@ Bind webstore to 172.17.0.1:80
 docker run -d --rm --name redis -p 172.17.0.1:7777:6379 redis
 docker run -d --name webstore -e REDISIP=172.17.0.1 -e REDISPORT=7777 -p 172.17.0.1:80:8080 fullaxx/webstore
 ```
-The default POST upload data limit is 20 MiB or (20*1024*1024) \
+The default POST upload data limit is 20 MiB or (20\*1024\*1024) \
 You can set this to any value with the MAXPOSTSIZE environment variable
 ```
 docker run -d --name webstore -e MAXPOSTSIZE=1000000 -e REDISIP=172.17.0.1 -e REDISPORT=6379 -p 172.17.0.1:80:8080 fullaxx/webstore
