@@ -109,7 +109,7 @@ Currently there are 6 algorithm types (defined in webstore.h) to choose from:
 -a 5 (384 bits)
 -a 6 (512 bits)
 ```
-These algorithm types default to the following algorithms (defined in ghash.h):
+These algorithm types default to the following algorithms (defined in gchash.h):
 ```
 128 bits - md5
 160 bits - sha1

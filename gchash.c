@@ -26,7 +26,7 @@
 #define mygcerr(s, e) fprintf(stderr, "%s failed: %s\n", s, gcry_strerror(e));
 
 // this must be free()'d
-char* gen_hash(unsigned char *digest, int dsize)
+static char* gen_hash(unsigned char *digest, int dsize)
 {
 	int i, hash_len;
 	char *hash;
@@ -39,6 +39,7 @@ char* gen_hash(unsigned char *digest, int dsize)
 	return hash;
 }
 
+// this must be free()'d
 char* create_token(int alg, char *msg, size_t msglen)
 {
 	gcry_md_hd_t h;

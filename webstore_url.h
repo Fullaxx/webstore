@@ -24,27 +24,25 @@
 // Create the URL and autodetect which REST NODE to request based on token
 static char* create_url(char *host, unsigned short port, char *token, int secure)
 {
-	char *hashtag;
+	char *node, *proto;
 	char url[2048];
 
 	switch(strlen(token)) {
-		case HASHLEN128: hashtag="128";    break;
-		case HASHLEN160: hashtag="160";   break;
-		case HASHLEN224: hashtag="224"; break;
-		case HASHLEN256: hashtag="256"; break;
-		case HASHLEN384: hashtag="384"; break;
-		case HASHLEN512: hashtag="512"; break;
+		case HASHLEN128: node="128"; break;
+		case HASHLEN160: node="160"; break;
+		case HASHLEN224: node="224"; break;
+		case HASHLEN256: node="256"; break;
+		case HASHLEN384: node="384"; break;
+		case HASHLEN512: node="512"; break;
 		default:
 			fprintf(stderr, "Token is incorrect!\n");
 			return NULL;
 			break;
 	}
 
-	if(secure) {
-		snprintf(&url[0], sizeof(url), "https://%s:%u/store/%s/%s", host, port, hashtag, token);
-	} else {
-		snprintf(&url[0], sizeof(url), "http://%s:%u/store/%s/%s", host, port, hashtag, token);
-	}
+	if(secure) { proto = "https"; }
+	else { proto = "http"; }
+	snprintf(&url[0], sizeof(url), "%s://%s:%u/store/%s/%s", proto, host, port, node, token);
 	return strdup(url);
 }
 
