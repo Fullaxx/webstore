@@ -23,9 +23,9 @@
 #include "rai.h"
 
 // Default values for any single IP address:
-// 5 requests allowed per 2 seconds
-#define REQPERIOD (2)
-#define REQCOUNT (5)
+// 100000 requests allowed per 1 second
+#define REQPERIOD (1)
+#define REQCOUNT (100000)
 
 typedef struct {
 	char *http_ip;

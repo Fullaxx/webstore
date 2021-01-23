@@ -22,6 +22,7 @@
 
 #include "webstore.h"
 #include "webstore_ops.h"
+#include "webstore_log.h"
 #include "futils.h"
 
 sri_t *g_srv = NULL;
@@ -67,7 +68,7 @@ static inline void save_ip(rai_t *rc, char *ip, int found)
 	freeReplyObject(reply);
 }
 
-static inline int check_ip(rai_t *rc, char *ip)
+static int check_ip(rai_t *rc, char *ip)
 {
 	int count, retval = 1;
 	redisReply *reply;
@@ -75,21 +76,15 @@ static inline int check_ip(rai_t *rc, char *ip)
 	reply = redisCommand(rc->c, "GET IPS:%s", ip);
 	if(reply->type == REDIS_REPLY_NIL) {
 		// KEY DOES NOT EXIST
-#ifdef DEBUG
-		printf("%s: 1\n", ip);
-#endif
+		log_add(WSLOG_INFO, "%s new connection allowed (count: 1)", ip);
 		save_ip(rc, ip, 0);
 	} else if(reply->type == REDIS_REPLY_STRING) {
 		count = atoi(reply->str);
 		if(count < REQCOUNT) {
-#ifdef DEBUG
-			printf("%s: %d (allowed)\n", ip, count+1);
-#endif
+			log_add(WSLOG_INFO, "%s new connection allowed (count: %d)", ip, count+1);
 			save_ip(rc, ip, 1);
 		} else {
-#ifdef DEBUG
-			printf("%s: %d (DENIED)\n", ip, count+1);
-#endif
+			log_add(WSLOG_INFO, "%s new connection denied (count: %d)", ip, count+1);
 			retval = 0;
 		}
 	} else { retval = 0; }	// THIS SHOULD NEVER HAPPEN
@@ -178,11 +173,15 @@ void webstore_start(srv_opts_t *so)
 		fprintf(stderr, "searest_start() failed to bind to %s:%u!\n", so->http_ip, so->http_port);
 		exit(EXIT_FAILURE);
 	}
+
+	log_add(WSLOG_INFO, "webstore started on port %u", so->http_port);
+	log_flush();
 }
 
 void webstore_stop(void)
 {
 	if(g_srv) {
+		log_add(WSLOG_INFO, "webstore shutdown");
 		searest_stop(g_srv);
 		searest_del(g_srv);
 		//rai_disconnect(&raddrh);

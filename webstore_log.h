@@ -33,5 +33,6 @@
 void log_add(int, const char *, ...);
 int log_open(char *);
 void log_close(void);
+void log_flush(void);
 
 #endif

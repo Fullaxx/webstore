@@ -24,14 +24,7 @@
 
 #include "webstore.h"
 #include "webstore_ops.h"
-
-#if 0
-	if(rc && !rai_is_connected(rc)) {
-		srci_set_return_code(ri, MHD_HTTP_SERVICE_UNAVAILABLE);
-		return strdup("Could not connect to HeartBeat DB");
-	}
-
-#endif
+#include "webstore_log.h"
 
 static const char* base85 =
 {
@@ -122,10 +115,12 @@ static char* get(wsreq_t *req, wsrt_t *rt, srci_t *ri)
 
 	if(!page) {
 		srci_set_return_code(ri, MHD_HTTP_NOT_FOUND);
+		log_add(WSLOG_INFO, "%s %d GET %s", srci_get_client_ip(ri), MHD_HTTP_NOT_FOUND, req->url);
 		return strdup("not found");
 	}
 
 	srci_set_return_code(ri, MHD_HTTP_OK);
+	log_add(WSLOG_INFO, "%s %d GET %s", srci_get_client_ip(ri), MHD_HTTP_OK, req->url);
 	return page;
 }
 
@@ -199,9 +194,8 @@ static char* post(wsreq_t *req, wsrt_t *rt, srci_t *ri)
 	}
 
 	srci_set_return_code(ri, MHD_HTTP_OK);
+	log_add(WSLOG_INFO, "%s %d POST %s", srci_get_client_ip(ri), MHD_HTTP_OK, req->url);
 	return strdup("ok");
-	//free(hash);
-	//return hash;
 }
 
 char* node128(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node_user_data)
@@ -227,6 +221,7 @@ char* node128(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node
 			break;*/
 		default:
 			srci_set_return_code(ri, MHD_HTTP_METHOD_NOT_ALLOWED);
+			log_add(WSLOG_WARN, "%s %d METHOD_NOT_ALLOWED", srci_get_client_ip(ri), ri->return_code);
 			page = strdup("method not allowed");
 			break;
 	}
@@ -257,6 +252,7 @@ char* node160(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node
 			break;*/
 		default:
 			srci_set_return_code(ri, MHD_HTTP_METHOD_NOT_ALLOWED);
+			log_add(WSLOG_WARN, "%s %d METHOD_NOT_ALLOWED", srci_get_client_ip(ri), ri->return_code);
 			page = strdup("method not allowed");
 			break;
 	}
@@ -287,6 +283,7 @@ char* node224(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node
 			break;*/
 		default:
 			srci_set_return_code(ri, MHD_HTTP_METHOD_NOT_ALLOWED);
+			log_add(WSLOG_WARN, "%s %d METHOD_NOT_ALLOWED", srci_get_client_ip(ri), ri->return_code);
 			page = strdup("method not allowed");
 			break;
 	}
@@ -317,6 +314,7 @@ char* node256(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node
 			break;*/
 		default:
 			srci_set_return_code(ri, MHD_HTTP_METHOD_NOT_ALLOWED);
+			log_add(WSLOG_WARN, "%s %d METHOD_NOT_ALLOWED", srci_get_client_ip(ri), ri->return_code);
 			page = strdup("method not allowed");
 			break;
 	}
@@ -347,6 +345,7 @@ char* node384(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node
 			break;*/
 		default:
 			srci_set_return_code(ri, MHD_HTTP_METHOD_NOT_ALLOWED);
+			log_add(WSLOG_WARN, "%s %d METHOD_NOT_ALLOWED", srci_get_client_ip(ri), ri->return_code);
 			page = strdup("method not allowed");
 			break;
 	}
@@ -377,6 +376,7 @@ char* node512(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node
 			break;*/
 		default:
 			srci_set_return_code(ri, MHD_HTTP_METHOD_NOT_ALLOWED);
+			log_add(WSLOG_WARN, "%s %d METHOD_NOT_ALLOWED", srci_get_client_ip(ri), ri->return_code);
 			page = strdup("method not allowed");
 			break;
 	}
