@@ -53,7 +53,6 @@ void print_avg_nodecb_time(void)
 }
 #endif
 
-#if 0
 // return SR_IP_DENY to DENY a new incoming connection based on IP address
 // return SR_IP_ACCEPT to ACCEPT a new incoming connection based on IP address
 static int ws_addr_check(char *inc_ip, void *sri_user_data)
@@ -64,18 +63,9 @@ static int ws_addr_check(char *inc_ip, void *sri_user_data)
 	// Blindly accept w/o logging localhost
 	if(strcmp(inc_ip, "127.0.0.1") == 0) { return SR_IP_ACCEPT; }
 
-	z = allow_ip(&lrt->rc, inc_ip, lrt->multithreaded);
+	z = allow_ip(lrt, inc_ip);
 	if(z == 0) { return SR_IP_DENY; }
 
-	return SR_IP_ACCEPT;
-}
-#endif
-
-// return SR_IP_DENY to DENY a new incoming connection based on IP address
-// return SR_IP_ACCEPT to ACCEPT a new incoming connection based on IP address
-static int ws_addr_check(char *inc_ip, void *sri_user_data)
-{
-	// Blindly accept all inbound connections
 	return SR_IP_ACCEPT;
 }
 
@@ -106,6 +96,7 @@ void webstore_start(srv_opts_t *so)
 		exit(EXIT_FAILURE);
 	}
 
+	// Initialize the server
 	g_srv = searest_new(32+11, 128+11, so->max_post_data_size);
 	searest_node_add(g_srv, "/store/128/",	&node128, NULL);
 	searest_node_add(g_srv, "/store/160/",	&node160, NULL);
@@ -114,10 +105,20 @@ void webstore_start(srv_opts_t *so)
 	searest_node_add(g_srv, "/store/384/",	&node384, NULL);
 	searest_node_add(g_srv, "/store/512/",	&node512, NULL);
 
+	// Configure HTTPS
 	if(so->certfile && so->keyfile) { activate_https(so); }
 
-	searest_set_addr_cb(g_srv, &ws_addr_check);
+	// Configure Connection Limiting
+	if(getenv("REQPERIOD")) { g_rt.reqperiod = atoi(getenv("REQPERIOD")); }
+	if(getenv("REQCOUNT")) { g_rt.reqcount = atol(getenv("REQCOUNT")); }
+	if((g_rt.reqperiod > 0) && (g_rt.reqcount > 0)) {
+		searest_set_addr_cb(g_srv, &ws_addr_check);
+	}
+
+	// Configure Multithread
 	if(so->use_threads == 0) searest_set_internal_select(g_srv);
+
+	// Start the server
 	z = searest_start(g_srv, so->http_ip, so->http_port, &g_rt);
 	if(z) {
 		if(!so->http_ip) { so->http_ip="*"; }
@@ -125,6 +126,7 @@ void webstore_start(srv_opts_t *so)
 		exit(EXIT_FAILURE);
 	}
 
+	// Log the success
 	log_add(WSLOG_INFO, "webstore started on port %u", so->http_port);
 	log_flush();
 }

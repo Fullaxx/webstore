@@ -34,12 +34,28 @@ typedef struct {
 	unsigned short rport;	// Redis Port
 } srv_opts_t;
 
+// WebStore Runtime data
+typedef struct {
+	rai_t rc;	//Redis Context
+	int multithreaded;
+	int reqperiod;
+	long reqcount;
+} wsrt_t;
+
+// WebStore Request Info
+typedef struct {
+	int type;
+	int hashlen;
+	char *url;
+	int urllen;
+} wsreq_t;
+
 // Found in webstore.c
 int shutting_down(void);
-void handle_redis_error(redisContext *c);
+void handle_redis_error(redisContext *);
 
 // Found in webstore_conn.c
-int allow_ip(rai_t *rc, char *ip, int mt);
+int allow_ip(wsrt_t *, char *);
 
 // Found in webstore_uhd.c
 void webstore_start(srv_opts_t *);
@@ -52,19 +68,5 @@ char* node224(char *, int, srci_t *, void *, void *);
 char* node256(char *, int, srci_t *, void *, void *);
 char* node384(char *, int, srci_t *, void *, void *);
 char* node512(char *, int, srci_t *, void *, void *);
-
-// WebStore Runtime data
-typedef struct {
-	rai_t rc;	//Redis Context
-	int multithreaded;
-} wsrt_t;
-
-// WebStore Request Info
-typedef struct {
-	int type;
-	int hashlen;
-	char *url;
-	int urllen;
-} wsreq_t;
 
 #endif
