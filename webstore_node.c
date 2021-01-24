@@ -86,6 +86,7 @@ static char* convert_hash(char *input, int len)
 
 static char* get(wsreq_t *req, wsrt_t *rt, srci_t *ri)
 {
+	int err = 0;
 	char *hash;
 	char *page = NULL;
 	redisReply *reply;
@@ -108,12 +109,18 @@ static char* get(wsreq_t *req, wsrt_t *rt, srci_t *ri)
 	reply = redisCommand(rc->c, "GET %s", hash);
 	if(!reply) {
 		handle_redis_error(rc->c);
+		err = 503;
 	} else {
 		if(reply->type == REDIS_REPLY_STRING) { page = strdup(reply->str); }
 		freeReplyObject(reply);
 	}
 	if(rt->multithreaded) { rai_unlock(rc); }
 	free(hash);
+
+	if(err == 503) {
+		srci_set_return_code(ri, MHD_HTTP_SERVICE_UNAVAILABLE);
+		return strdup("service unavailable");
+	}
 
 	if(!page) {
 		srci_set_return_code(ri, MHD_HTTP_NOT_FOUND);
@@ -128,7 +135,7 @@ static char* get(wsreq_t *req, wsrt_t *rt, srci_t *ri)
 
 static int do_redis_post(wsrt_t *rt, const char *hash, const unsigned char *dataptr, size_t datalen)
 {
-	int err = 1;
+	int err = 500;
 	char *datastr;
 	redisReply *reply;
 	rai_t *rc = &rt->rc;
@@ -142,6 +149,7 @@ static int do_redis_post(wsrt_t *rt, const char *hash, const unsigned char *data
 	reply = redisCommand(rc->c, "SET %s %s", hash, datastr);
 	if(!reply) {
 		handle_redis_error(rc->c);
+		err = 503;
 	} else {
 		if(reply->type == REDIS_REPLY_STATUS) {
 			if(strncmp("OK", reply->str, 2) == 0) { err = 0; }
@@ -183,7 +191,7 @@ static char* post(wsreq_t *req, wsrt_t *rt, srci_t *ri)
 	}
 
 #ifdef DEBUG
-	printf("%lu) %s\n", datalen, dataptr);
+	//printf("%lu) %s\n", datalen, dataptr);
 #endif
 
 	hash = convert_hash(req->url, req->urllen);
@@ -195,8 +203,9 @@ static char* post(wsreq_t *req, wsrt_t *rt, srci_t *ri)
 	z = do_redis_post(rt, hash, dataptr, datalen);
 	free(hash);
 	if(z) {
-		srci_set_return_code(ri, MHD_HTTP_INTERNAL_SERVER_ERROR);
-		return strdup("internal server error");
+		srci_set_return_code(ri, z);
+		if(z == 503) { return strdup("service unavailable"); }
+		else { return strdup("internal server error"); }
 	}
 
 	srci_set_return_code(ri, MHD_HTTP_OK);
@@ -204,11 +213,19 @@ static char* post(wsreq_t *req, wsrt_t *rt, srci_t *ri)
 	return strdup("ok");
 }
 
+static inline char* shutdownmsg(srci_t *ri)
+{
+	srci_set_return_code(ri, MHD_HTTP_SERVICE_UNAVAILABLE);
+	return strdup("service unavailable: shutting down");
+}
+
 char* node128(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node_user_data)
 {
 	wsreq_t req;
 	wsrt_t *rt;
 	char *page = NULL;
+
+	if(shutting_down()) { return shutdownmsg(ri); }
 
 	req.type = HASHALG128;
 	req.hashlen = HASHLEN128;
@@ -241,6 +258,8 @@ char* node160(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node
 	wsrt_t *rt;
 	char *page = NULL;
 
+	if(shutting_down()) { return shutdownmsg(ri); }
+
 	req.type = HASHALG160;
 	req.hashlen = HASHLEN160;
 	req.url = url;
@@ -271,6 +290,8 @@ char* node224(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node
 	wsreq_t req;
 	wsrt_t *rt;
 	char *page = NULL;
+
+	if(shutting_down()) { return shutdownmsg(ri); }
 
 	req.type = HASHALG224;
 	req.hashlen = HASHLEN224;
@@ -303,6 +324,8 @@ char* node256(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node
 	wsrt_t *rt;
 	char *page = NULL;
 
+	if(shutting_down()) { return shutdownmsg(ri); }
+
 	req.type = HASHALG256;
 	req.hashlen = HASHLEN256;
 	req.url = url;
@@ -334,6 +357,8 @@ char* node384(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node
 	wsrt_t *rt;
 	char *page = NULL;
 
+	if(shutting_down()) { return shutdownmsg(ri); }
+
 	req.type = HASHALG384;
 	req.hashlen = HASHLEN384;
 	req.url = url;
@@ -364,6 +389,8 @@ char* node512(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node
 	wsreq_t req;
 	wsrt_t *rt;
 	char *page = NULL;
+
+	if(shutting_down()) { return shutdownmsg(ri); }
 
 	req.type = HASHALG512;
 	req.hashlen = HASHLEN512;

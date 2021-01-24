@@ -49,6 +49,8 @@ void alarm_handler(int signum)
 }
 #endif
 
+int shutting_down(void) { return g_shutdown; }
+
 #include <errno.h>
 void handle_redis_error(redisContext *c)
 {
@@ -141,6 +143,7 @@ int main(int argc, char *argv[])
 		usleep(1000);
 		z++;
 	}
+	usleep(1000);
 
 	// Stop Services
 	webstore_stop();

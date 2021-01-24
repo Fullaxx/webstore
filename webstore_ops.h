@@ -23,6 +23,7 @@
 #include "rai.h"
 
 // Found in webstore.c
+int shutting_down(void);
 void handle_redis_error(redisContext *c);
 
 // Default values for any single IP address:
