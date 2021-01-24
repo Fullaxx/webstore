@@ -54,75 +54,26 @@ void print_avg_nodecb_time(void)
 #endif
 
 #if 0
-static inline void save_ip(rai_t *rc, char *ip, int found)
-{
-	redisReply *reply;
-	if(found == 0) {
-		reply = redisCommand(rc->c, "SET IPS:%s 1 EX %d", ip, REQPERIOD);
-	} else {
-		reply = redisCommand(rc->c, "INCR IPS:%s", ip);
-	}
-	if(!reply) { handle_redis_error(rc->c); return; }
-	freeReplyObject(reply);
-}
-
-static int check_ip(rai_t *rc, char *ip)
-{
-	int count, retval = 1;
-	redisReply *reply;
-
-	reply = redisCommand(rc->c, "GET IPS:%s", ip);
-	if(!reply) { handle_redis_error(rc->c); return 0; }
-	if(reply->type == REDIS_REPLY_NIL) {
-		// KEY DOES NOT EXIST
-		log_add(WSLOG_INFO, "%s new connection allowed (count: 1)", ip);
-		save_ip(rc, ip, 0);
-	} else if(reply->type == REDIS_REPLY_STRING) {
-		count = atoi(reply->str);
-		if(count < REQCOUNT) {
-			log_add(WSLOG_INFO, "%s new connection allowed (count: %d)", ip, count+1);
-			save_ip(rc, ip, 1);
-		} else {
-			log_add(WSLOG_INFO, "%s new connection denied (count: %d)", ip, count+1);
-			retval = 0;
-		}
-	} else { retval = 0; }	// THIS SHOULD NEVER HAPPEN
-
-	freeReplyObject(reply);
-	return retval;
-}
-
-static int allow_ip(wsrt_t *lrt, char *ip)
-{
-	int retval;
-	rai_t *rc = &lrt->rc;
-
-	//LOCK RAI if redis calls are in their own thread, using a shared context
-	if(lrt->multithreaded) { rai_lock(rc); }
-	retval = check_ip(rc, ip);
-	if(lrt->multithreaded) { rai_unlock(rc); }
-
-	return retval;
-}
-
 // return SR_IP_DENY to DENY a new incoming connection based on IP address
 // return SR_IP_ACCEPT to ACCEPT a new incoming connection based on IP address
-static int ws_addr_check(char *inc_ip, void *user_data)
+static int ws_addr_check(char *inc_ip, void *sri_user_data)
 {
 	int z;
-	wsrt_t *lrt = (wsrt_t *)user_data;
+	wsrt_t *lrt = (wsrt_t *)sri_user_data;
 
 	// Blindly accept w/o logging localhost
 	if(strcmp(inc_ip, "127.0.0.1") == 0) { return SR_IP_ACCEPT; }
 
-	z = allow_ip(lrt, inc_ip);
+	z = allow_ip(&lrt->rc, inc_ip, lrt->multithreaded);
 	if(z == 0) { return SR_IP_DENY; }
 
 	return SR_IP_ACCEPT;
 }
 #endif
 
-static int ws_addr_check(char *inc_ip, void *user_data)
+// return SR_IP_DENY to DENY a new incoming connection based on IP address
+// return SR_IP_ACCEPT to ACCEPT a new incoming connection based on IP address
+static int ws_addr_check(char *inc_ip, void *sri_user_data)
 {
 	// Blindly accept all inbound connections
 	return SR_IP_ACCEPT;

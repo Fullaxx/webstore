@@ -22,15 +22,6 @@
 #include "searest.h"
 #include "rai.h"
 
-// Found in webstore.c
-int shutting_down(void);
-void handle_redis_error(redisContext *c);
-
-// Default values for any single IP address:
-// 1000 requests allowed per 1 second
-#define REQPERIOD (1)
-#define REQCOUNT (1000)
-
 typedef struct {
 	char *http_ip;
 	unsigned short http_port;
@@ -43,10 +34,18 @@ typedef struct {
 	unsigned short rport;	// Redis Port
 } srv_opts_t;
 
+// Found in webstore.c
+int shutting_down(void);
+void handle_redis_error(redisContext *c);
+
+// Found in webstore_conn.c
+int allow_ip(rai_t *rc, char *ip, int mt);
+
 // Found in webstore_uhd.c
 void webstore_start(srv_opts_t *);
 void webstore_stop(void);
 
+// Found in webstore_node.c
 char* node128(char *, int, srci_t *, void *, void *);
 char* node160(char *, int, srci_t *, void *, void *);
 char* node224(char *, int, srci_t *, void *, void *);
