@@ -52,10 +52,10 @@ void alarm_handler(int signum)
 int shutting_down(void) { return g_shutdown; }
 
 #include <errno.h>
-void handle_redis_error(redisContext *c)
+void handle_redis_error(rai_t *rc)
 {
 	char *etype = NULL;
-	switch(c->err) {
+	switch(rc->c->err) {
 		case REDIS_ERR_IO:
 			fprintf(stderr, "REDIS_ERR_IO: %s\n", strerror(errno));
 			log_add(WSLOG_ERR, "REDIS_ERR_IO: %s", strerror(errno));
@@ -74,8 +74,8 @@ void handle_redis_error(redisContext *c)
 			break;
 	}
 	if(etype) {
-		fprintf(stderr, "%s: %s\n", etype, c->errstr);
-		log_add(WSLOG_ERR, "%s: %s", etype, c->errstr);
+		fprintf(stderr, "%s: %s\n", etype, rc->c->errstr);
+		log_add(WSLOG_ERR, "%s: %s", etype, rc->c->errstr);
 	}
 	g_redis_error = 1;
 	g_shutdown = 1;

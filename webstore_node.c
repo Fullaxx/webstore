@@ -108,7 +108,7 @@ static char* get(wsreq_t *req, wsrt_t *rt, srci_t *ri)
 	if(rt->multithreaded) { rai_lock(rc); }
 	reply = redisCommand(rc->c, "GET %s", hash);
 	if(!reply) {
-		handle_redis_error(rc->c);
+		handle_redis_error(rc);
 		err = 503;
 	} else {
 		if(reply->type == REDIS_REPLY_STRING) { page = strdup(reply->str); }
@@ -148,7 +148,7 @@ static int do_redis_post(wsrt_t *rt, const char *hash, const unsigned char *data
 	if(rt->multithreaded) { rai_lock(rc); }
 	reply = redisCommand(rc->c, "SET %s %s", hash, datastr);
 	if(!reply) {
-		handle_redis_error(rc->c);
+		handle_redis_error(rc);
 		err = 503;
 	} else {
 		if(reply->type == REDIS_REPLY_STATUS) {

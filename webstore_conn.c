@@ -34,7 +34,7 @@ static inline void save_ip(rai_t *rc, char *ip, int found, int reqperiod)
 	} else {
 		reply = redisCommand(rc->c, "INCR IPS:%s", ip);
 	}
-	if(!reply) { handle_redis_error(rc->c); return; }
+	if(!reply) { handle_redis_error(rc); return; }
 	freeReplyObject(reply);
 }
 
@@ -45,7 +45,7 @@ static int check_ip(wsrt_t *lrt, char *ip)
 	rai_t *rc = &lrt->rc;
 
 	reply = redisCommand(rc->c, "GET IPS:%s", ip);
-	if(!reply) { handle_redis_error(rc->c); return 0; }
+	if(!reply) { handle_redis_error(rc); return 0; }
 	if(reply->type == REDIS_REPLY_NIL) {
 		// KEY DOES NOT EXIST
 		log_add(WSLOG_INFO, "%s new connection allowed (count: 1)", ip);

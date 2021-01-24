@@ -52,7 +52,7 @@ typedef struct {
 
 // Found in webstore.c
 int shutting_down(void);
-void handle_redis_error(redisContext *);
+void handle_redis_error(rai_t *);
 
 // Found in webstore_conn.c
 int allow_ip(wsrt_t *, char *);
