@@ -213,7 +213,7 @@ const char *upload_data, size_t *upload_data_size, void **con_cls)
 
 	if (!ri) {
 #ifdef DEBUG
-		printf ("New %s request for %s using version %s\n", method, url, version);
+		//printf ("New %s request for %s using version %s\n", method, url, version);
 #endif
 		ri = calloc (1, sizeof(srci_t));
 		if(!ri) { return MHD_NO; }
@@ -250,7 +250,7 @@ const char *upload_data, size_t *upload_data_size, void **con_cls)
 		//We need to ask the caller if XXX bytes of upload data is ok 
 
 #ifdef DEBUG
-		if(content_length_header) printf ("Content-Length: %s \n", content_length_header);
+		//if(content_length_header) printf ("Content-Length: %s \n", content_length_header);
 #endif
 
 		return MHD_YES;
@@ -296,7 +296,7 @@ const char *upload_data, size_t *upload_data_size, void **con_cls)
 	}
 
 #ifdef DEBUG
-	if(ret == MHD_NO)	{ fprintf (stderr, "Refusing Connection!\n"); }
+	//if(ret == MHD_NO)	{ fprintf (stderr, "Refusing Connection!\n"); }
 	//else				{ fprintf (stderr, "Returning %d!\n", ri->return_code); }
 #endif
 
