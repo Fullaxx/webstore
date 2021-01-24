@@ -22,6 +22,9 @@
 #include "searest.h"
 #include "rai.h"
 
+// Found in webstore.c
+void handle_redis_error(redisContext *c);
+
 // Default values for any single IP address:
 // 100000 requests allowed per 1 second
 #define REQPERIOD (1)
@@ -39,6 +42,7 @@ typedef struct {
 	unsigned short rport;	// Redis Port
 } srv_opts_t;
 
+// Found in webstore_uhd.c
 void webstore_start(srv_opts_t *);
 void webstore_stop(void);
 

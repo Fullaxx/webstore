@@ -28,7 +28,7 @@
 
 static void parse_args(int argc, char **argv);
 
-int g_redis_dissappeared = 0;
+int g_redis_error = 0;
 int g_shutdown = 0;
 
 char *g_rsock = NULL;
@@ -49,12 +49,43 @@ void alarm_handler(int signum)
 }
 #endif
 
+#include <errno.h>
+void handle_redis_error(redisContext *c)
+{
+	char *etype = NULL;
+	switch(c->err) {
+		case REDIS_ERR_IO:
+			fprintf(stderr, "REDIS_ERR_IO: %s\n", strerror(errno));
+			log_add(WSLOG_ERR, "REDIS_ERR_IO: %s", strerror(errno));
+			break;
+		case REDIS_ERR_EOF:
+			etype = "REDIS_ERR_EOF";
+			break;
+		case REDIS_ERR_PROTOCOL:
+			etype = "REDIS_ERR_PROTOCOL";
+			break;
+		case REDIS_ERR_OOM:
+			etype = "REDIS_ERR_OOM";
+			break;
+		case REDIS_ERR_OTHER:
+			etype = "REDIS_ERR_OTHER";
+			break;
+	}
+	if(etype) {
+		fprintf(stderr, "%s: %s\n", etype, c->errstr);
+		log_add(WSLOG_ERR, "%s: %s", etype, c->errstr);
+	}
+	g_redis_error = 1;
+	g_shutdown = 1;
+}
+
 void sig_handler(int signum)
 {
 	switch(signum) {
-		/*case SIGPIPE:
-			fprintf(stderr, "SIGPIPE recvd!\n");
-			g_shutdown = 1;*/
+		case SIGPIPE:
+			fprintf(stderr, "SIGPIPE\n");
+			log_add(WSLOG_ERR, "SIGPIPE");
+			break;
 		case SIGHUP:
 		case SIGINT:
 		case SIGTERM:
@@ -96,6 +127,7 @@ int main(int argc, char *argv[])
 	signal(SIGTERM, sig_handler);
 	signal(SIGQUIT,	sig_handler);
 	signal(SIGHUP,	sig_handler);
+	signal(SIGPIPE,	sig_handler);
 #ifdef SRNODECHRONOMETRY
 	if(alarm_stats) {
 		signal(SIGALRM, alarm_handler);
@@ -104,7 +136,7 @@ int main(int argc, char *argv[])
 #endif
 
 	z=0;	// Wait for the sweet release of death
-	while(!g_shutdown && !g_redis_dissappeared) {
+	while(!g_shutdown && !g_redis_error) {
 		if(z>999) { z=0; }
 		usleep(1000);
 		z++;

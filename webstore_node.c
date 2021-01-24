@@ -106,10 +106,12 @@ static char* get(wsreq_t *req, wsrt_t *rt, srci_t *ri)
 	//LOCK RAI if redis calls are in their own thread, using a shared context
 	if(rt->multithreaded) { rai_lock(rc); }
 	reply = redisCommand(rc->c, "GET %s", hash);
-	if(reply->type == REDIS_REPLY_STRING) {
-		page = strdup(reply->str);
+	if(!reply) {
+		handle_redis_error(rc->c);
+	} else {
+		if(reply->type == REDIS_REPLY_STRING) { page = strdup(reply->str); }
+		freeReplyObject(reply);
 	}
-	freeReplyObject(reply);
 	if(rt->multithreaded) { rai_unlock(rc); }
 	free(hash);
 
@@ -138,10 +140,14 @@ static int do_redis_post(wsrt_t *rt, const char *hash, const unsigned char *data
 	//LOCK RAI if redis calls are in their own thread, using a shared context
 	if(rt->multithreaded) { rai_lock(rc); }
 	reply = redisCommand(rc->c, "SET %s %s", hash, datastr);
-	if(reply->type == REDIS_REPLY_STATUS) {
-		if(strncmp("OK", reply->str, 2) == 0) { err = 0; }
+	if(!reply) {
+		handle_redis_error(rc->c);
+	} else {
+		if(reply->type == REDIS_REPLY_STATUS) {
+			if(strncmp("OK", reply->str, 2) == 0) { err = 0; }
+		}
+		freeReplyObject(reply);
 	}
-	freeReplyObject(reply);
 	if(rt->multithreaded) { rai_unlock(rc); }
 
 	free(datastr);

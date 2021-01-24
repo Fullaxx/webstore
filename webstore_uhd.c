@@ -27,10 +27,6 @@
 
 sri_t *g_srv = NULL;
 wsrt_t g_rt;
-
-//dedicated redis handle for checking IP addresses
-//node callbacks will not use this handle
-// TEST THIS LATER rai_t raddrh;
 	
 #ifdef SRNODECHRONOMETRY
 void print_avg_nodecb_time(void)
@@ -65,6 +61,7 @@ static inline void save_ip(rai_t *rc, char *ip, int found)
 	} else {
 		reply = redisCommand(rc->c, "INCR IPS:%s", ip);
 	}
+	if(!reply) { handle_redis_error(rc->c); return; }
 	freeReplyObject(reply);
 }
 
@@ -74,6 +71,7 @@ static int check_ip(rai_t *rc, char *ip)
 	redisReply *reply;
 
 	reply = redisCommand(rc->c, "GET IPS:%s", ip);
+	if(!reply) { handle_redis_error(rc->c); return 0; }
 	if(reply->type == REDIS_REPLY_NIL) {
 		// KEY DOES NOT EXIST
 		log_add(WSLOG_INFO, "%s new connection allowed (count: 1)", ip);
@@ -141,7 +139,6 @@ void webstore_start(srv_opts_t *so)
 	int z;
 
 	memset(&g_rt, 0, sizeof(wsrt_t));
-	//memset(&raddrh, 0, sizeof(raddrh));
 	g_rt.multithreaded = so->use_threads;
 	z = rai_connect(&g_rt.rc, so->rdest, so->rport);
 	if(z) {
@@ -149,11 +146,6 @@ void webstore_start(srv_opts_t *so)
 		else { fprintf(stderr, "Failed to connect to %s!\n", so->rdest); }
 		exit(EXIT_FAILURE);
 	}
-	/*z = rai_connect(&raddrh, redis_sock, 0);
-	if(z) {
-		fprintf(stderr, "Couldnt get a redis handle!\n");
-		exit(EXIT_FAILURE);
-	}*/
 
 	g_srv = searest_new(32+11, 128+11, so->max_post_data_size);
 	searest_node_add(g_srv, "/store/128/",	&node128, NULL);
@@ -184,7 +176,6 @@ void webstore_stop(void)
 		log_add(WSLOG_INFO, "webstore shutdown");
 		searest_stop(g_srv);
 		searest_del(g_srv);
-		//rai_disconnect(&raddrh);
 		rai_disconnect(&g_rt.rc);
 	}
 }
