@@ -26,9 +26,9 @@
 void handle_redis_error(redisContext *c);
 
 // Default values for any single IP address:
-// 100000 requests allowed per 1 second
+// 1000 requests allowed per 1 second
 #define REQPERIOD (1)
-#define REQCOUNT (100000)
+#define REQCOUNT (1000)
 
 typedef struct {
 	char *http_ip;

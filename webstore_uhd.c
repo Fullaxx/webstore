@@ -65,6 +65,7 @@ static inline void save_ip(rai_t *rc, char *ip, int found)
 	freeReplyObject(reply);
 }
 
+#if 0
 static int check_ip(rai_t *rc, char *ip)
 {
 	int count, retval = 1;
@@ -117,6 +118,12 @@ static int ws_addr_check(char *inc_ip, void *user_data)
 	z = allow_ip(lrt, inc_ip);
 	if(z == 0) { return SR_IP_DENY; }
 
+	return SR_IP_ACCEPT;
+}
+#endif
+
+static int ws_addr_check(char *inc_ip, void *user_data)
+{
 	return SR_IP_ACCEPT;
 }
 
