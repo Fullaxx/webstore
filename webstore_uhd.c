@@ -53,6 +53,7 @@ void print_avg_nodecb_time(void)
 }
 #endif
 
+#if 0
 static inline void save_ip(rai_t *rc, char *ip, int found)
 {
 	redisReply *reply;
@@ -65,7 +66,6 @@ static inline void save_ip(rai_t *rc, char *ip, int found)
 	freeReplyObject(reply);
 }
 
-#if 0
 static int check_ip(rai_t *rc, char *ip)
 {
 	int count, retval = 1;
@@ -124,6 +124,7 @@ static int ws_addr_check(char *inc_ip, void *user_data)
 
 static int ws_addr_check(char *inc_ip, void *user_data)
 {
+	// Blindly accept all inbound connections
 	return SR_IP_ACCEPT;
 }
 
