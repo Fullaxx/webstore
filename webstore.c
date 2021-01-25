@@ -38,16 +38,18 @@ unsigned short g_rport = 0;
 srv_opts_t g_so;
 char *g_logfile = NULL;
 
-#ifdef SRNODECHRONOMETRY
-int alarm_stats = 0;
-
+int g_log_sync_timer = 0;
 void alarm_handler(int signum)
 {
+	g_log_sync_timer++;
+	if(g_log_sync_timer >= 4) { log_flush(); g_log_sync_timer = 0; }
+
+#ifdef SRNODECHRONOMETRY
 	print_avg_nodecb_time();
+#endif
 
 	(void) alarm(1);
 }
-#endif
 
 int shutting_down(void) { return g_shutdown; }
 
@@ -130,12 +132,8 @@ int main(int argc, char *argv[])
 	signal(SIGQUIT,	sig_handler);
 	signal(SIGHUP,	sig_handler);
 	signal(SIGPIPE,	sig_handler);
-#ifdef SRNODECHRONOMETRY
-	if(alarm_stats) {
-		signal(SIGALRM, alarm_handler);
-		(void) alarm(1);
-	}
-#endif
+	signal(SIGALRM, alarm_handler);
+	(void) alarm(1);
 
 	z=0;	// Wait for the sweet release of death
 	while(!g_shutdown && !g_redis_error) {
