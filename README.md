@@ -79,7 +79,7 @@ fullaxx/webstore
 ```
 
 ## Client Examples using docker
-You can test the client docker images against a running server instance. \
+You can test the client docker images against a running server instance \
 The test server is hosted at webstore.dspi.org on ports 80 and 443:
 ```
 docker run -it -e WSHOST=webstore.dspi.org -e WSPORT=80 -e ALG=1 -e MSG=test fullaxx/webstore-post
@@ -92,8 +92,8 @@ docker run -it -e HTTPS=1 -e WSHOST=webstore.dspi.org -e WSPORT=443 -e TOKEN=098
 ```
 
 ## Client Instructions
-In order to use the client, you will need to compile against libcurl and libgcrypt. \
-In Ubuntu, you would install build-essential libcurl4-gnutls-dev and libgcrypt20-dev. \
+In order to use the client, you will need to compile against libcurl and libgcrypt \
+In Ubuntu, you would install build-essential libcurl4-gnutls-dev and libgcrypt20-dev \
 ```
 apt-get install -y build-essential libcurl4-gnutls-dev libgcrypt20-dev
 ./compile_clients.sh
@@ -125,7 +125,7 @@ Each webstore server instance has 6 nodes (defined in webstore_uhd.c) to GET/POS
 /store/384/
 /store/512/
 ```
-Each node accepts a token of specific length to use as storage UUID. \
+Each node accepts a token of specific length to use as storage UUID \
 Currently there are 6 algorithm types (defined in webstore.h) to choose from:
 ```
 -a 1 (128 bits)
