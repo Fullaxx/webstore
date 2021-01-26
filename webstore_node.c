@@ -231,7 +231,7 @@ static char* post(wsreq_t *req, wsrt_t *rt, srci_t *ri)
 		switch(z) {
 			case 304:
 				log_add(WSLOG_INFO, "%s %d POST %s NOTMOD", srci_get_client_ip(ri), z, req->url);
-				return strdup("not modified");
+				return strdup("object immutable - not modified");
 				break;
 			case 417:
 				return strdup("redis reply error");
@@ -242,9 +242,6 @@ static char* post(wsreq_t *req, wsrt_t *rt, srci_t *ri)
 			default:
 				return strdup("internal server error");
 		}
-		/*if(z == 304) { return strdup("not modified"); }
-		if(z == 503) { return strdup("service unavailable"); }
-		else { return strdup("internal server error"); }*/
 	}
 
 	srci_set_return_code(ri, MHD_HTTP_OK);
