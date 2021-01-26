@@ -41,6 +41,7 @@ typedef struct {
 	int reqperiod;
 	long reqcount;
 	long expiration;
+	int getonce;
 } wsrt_t;
 
 // WebStore Request Info

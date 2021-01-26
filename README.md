@@ -59,9 +59,14 @@ Connection limiting will only be enabled if both variables are integers greater 
 -e REQPERIOD=2 -e REQCOUNT=15
 ```
 You can set expirations on all messages globally with the EXPIRATION environment variable \
-Using EXPIRATION=60 will tell redis to delete each POSTed message 60 seconds after it was added
+Using EXPIRATION=60 will tell redis to delete each message 60 seconds after it was POSTed
 ```
 -e EXPIRATION=60
+```
+You can set a flag that will allow only 1 GET per message \
+Using GETONCE=1 will tell redis to delete any message after a successful GET
+```
+-e GETONCE=1
 ```
 
 ## HTTPS Configuration

@@ -84,11 +84,20 @@ static char* convert_hash(char *input, int len)
 	return strdup(newhash);
 }
 
+static inline void do_del(rai_t *rc, char *hash)
+{
+	redisReply *reply;
+	reply = redisCommand(rc->c, "DEL %s", hash);
+	freeReplyObject(reply);
+}
+
 static char* get(wsreq_t *req, wsrt_t *rt, srci_t *ri)
 {
 	int err = 0;
 	char *hash;
 	char *page = NULL;
+	char *log_fmt;
+	char log_entry[512];
 	redisReply *reply;
 	rai_t *rc = &rt->rc;
 
@@ -108,10 +117,11 @@ static char* get(wsreq_t *req, wsrt_t *rt, srci_t *ri)
 	if(rt->multithreaded) { rai_lock(rc); }
 	reply = redisCommand(rc->c, "GET %s", hash);
 	if(!reply) {
-		handle_redis_error(rc);
 		err = 503;
+		handle_redis_error(rc);
 	} else {
 		if(reply->type == REDIS_REPLY_STRING) { page = strdup(reply->str); }
+		if(page && rt->getonce) { do_del(rc, hash); }
 		freeReplyObject(reply);
 	}
 	if(rt->multithreaded) { rai_unlock(rc); }
@@ -129,7 +139,10 @@ static char* get(wsreq_t *req, wsrt_t *rt, srci_t *ri)
 	}
 
 	srci_set_return_code(ri, MHD_HTTP_OK);
-	log_add(WSLOG_INFO, "%s %d GET %s", srci_get_client_ip(ri), MHD_HTTP_OK, req->url);
+	if(rt->getonce) { log_fmt = "%s %d GET %s ONCE"; }
+	else { log_fmt = "%s %d GET %s"; }
+	snprintf(log_entry, sizeof(log_entry), log_fmt, srci_get_client_ip(ri), MHD_HTTP_OK, req->url);
+	log_add(WSLOG_INFO, "%s", log_entry);
 	return page;
 }
 
@@ -152,8 +165,8 @@ static int do_redis_post(wsrt_t *rt, const char *hash, const unsigned char *data
 		reply = redisCommand(rc->c, "SET %s %s", hash, datastr);
 	}
 	if(!reply) {
-		handle_redis_error(rc);
 		err = 503;
+		handle_redis_error(rc);
 	} else {
 		if(reply->type == REDIS_REPLY_STATUS) {
 			if(strncmp("OK", reply->str, 2) == 0) { err = 0; }

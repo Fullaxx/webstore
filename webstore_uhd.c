@@ -27,7 +27,7 @@
 
 sri_t *g_srv = NULL;
 wsrt_t g_rt;
-	
+
 #ifdef SRNODECHRONOMETRY
 void print_avg_nodecb_time(void)
 {
@@ -118,6 +118,9 @@ void webstore_start(srv_opts_t *so)
 	// Configure Redis Key Expiration
 	if(getenv("EXPIRATION")) { g_rt.expiration = atol(getenv("EXPIRATION")); }
 	if(g_rt.expiration < 0) { g_rt.expiration = 0; }
+
+	// Configure DEL after GET
+	if(getenv("GETONCE")) { g_rt.getonce = 1; }
 
 	// Configure HTTPS
 	if(so->certfile && so->keyfile) { activate_https(so); }
