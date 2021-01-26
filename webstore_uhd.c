@@ -123,8 +123,8 @@ void webstore_start(srv_opts_t *so)
 	if(getenv("EXPIRATION")) { g_rt.expiration = atol(getenv("EXPIRATION")); }
 	if(g_rt.expiration < 0) { g_rt.expiration = 0; }
 
-	// Configure DEL after GET
-	if(getenv("GETONCE")) { g_rt.getonce = 1; }
+	// Configure DELETE after GET
+	if(getenv("MISSIONIMPOSSIBLE")) { g_rt.missionimpossible = 1; }
 
 	// Configure immutable messages
 	if(getenv("IMMUTABLE")) { g_rt.immutable = 1; }

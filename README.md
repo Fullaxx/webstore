@@ -64,9 +64,9 @@ Using EXPIRATION=60 will tell redis to delete each message 60 seconds after it w
 -e EXPIRATION=60
 ```
 You can set a flag that will allow only 1 GET per message \
-Using GETONCE=1 will tell redis to delete the retrieved message after a successful GET
+Using MISSIONIMPOSSIBLE=1 will tell redis to delete the retrieved message after a successful GET
 ```
--e GETONCE=1
+-e MISSIONIMPOSSIBLE=1
 ```
 You can set a flag that will make all messages immutable \
 Using IMMUTABLE=1 will allow a successful POST only if that hash doesnt already exist in redis \

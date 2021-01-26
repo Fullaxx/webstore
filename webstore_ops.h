@@ -41,7 +41,7 @@ typedef struct {
 	int reqperiod;
 	long reqcount;
 	long expiration;
-	int getonce;
+	int missionimpossible;
 	int immutable;
 } wsrt_t;
 
