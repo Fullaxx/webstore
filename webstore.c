@@ -61,6 +61,8 @@ void handle_redis_error(rai_t *rc)
 		case REDIS_ERR_OTHER:
 			etype = "REDIS_ERR_OTHER";
 			break;
+		default:
+			etype = "UNKNOWN";
 	}
 	if(etype) {
 		fprintf(stderr, "%s: %s\n", etype, rc->c->errstr);
