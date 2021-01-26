@@ -38,19 +38,6 @@ unsigned short g_rport = 0;
 srv_opts_t g_so;
 char *g_logfile = NULL;
 
-int g_log_sync_timer = 0;
-void alarm_handler(int signum)
-{
-	g_log_sync_timer++;
-	if(g_log_sync_timer >= 4) { log_flush(); g_log_sync_timer = 0; }
-
-#ifdef SRNODECHRONOMETRY
-	print_avg_nodecb_time();
-#endif
-
-	(void) alarm(1);
-}
-
 int shutting_down(void) { return g_shutdown; }
 
 #include <errno.h>
@@ -83,7 +70,20 @@ void handle_redis_error(rai_t *rc)
 	g_shutdown = 1;
 }
 
-void sig_handler(int signum)
+int g_log_sync_timer = 0;
+static void alarm_handler(int signum)
+{
+	g_log_sync_timer++;
+	if(g_log_sync_timer >= 4) { log_flush(); g_log_sync_timer = 0; }
+
+#ifdef SRNODECHRONOMETRY
+	print_avg_nodecb_time();
+#endif
+
+	(void) alarm(1);
+}
+
+static void sig_handler(int signum)
 {
 	switch(signum) {
 		case SIGPIPE:
