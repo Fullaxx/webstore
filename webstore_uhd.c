@@ -105,8 +105,8 @@ void webstore_start(srv_opts_t *so)
 	searest_node_add(g_srv, "/store/384/",	&node384, NULL);
 	searest_node_add(g_srv, "/store/512/",	&node512, NULL);
 
-	// Configure HTTPS
-	if(so->certfile && so->keyfile) { activate_https(so); }
+	// Configure Multithread
+	if(so->use_threads == 0) { searest_set_internal_select(g_srv); }
 
 	// Configure Connection Limiting
 	if(getenv("REQPERIOD")) { g_rt.reqperiod = atoi(getenv("REQPERIOD")); }
@@ -115,8 +115,12 @@ void webstore_start(srv_opts_t *so)
 		searest_set_addr_cb(g_srv, &ws_addr_check);
 	}
 
-	// Configure Multithread
-	if(so->use_threads == 0) searest_set_internal_select(g_srv);
+	// Configure Redis Key Expiration
+	if(getenv("EXPIRATION")) { g_rt.expiration = atol(getenv("EXPIRATION")); }
+	if(g_rt.expiration < 0) { g_rt.expiration = 0; }
+
+	// Configure HTTPS
+	if(so->certfile && so->keyfile) { activate_https(so); }
 
 	// Start the server
 	z = searest_start(g_srv, so->http_ip, so->http_port, &g_rt);
@@ -134,9 +138,9 @@ void webstore_start(srv_opts_t *so)
 void webstore_stop(void)
 {
 	if(g_srv) {
-		log_add(WSLOG_INFO, "webstore shutdown");
 		searest_stop(g_srv);
 		searest_del(g_srv);
+		log_add(WSLOG_INFO, "webstore shutdown");
 		rai_disconnect(&g_rt.rc);
 	}
 }

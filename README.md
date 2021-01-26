@@ -58,6 +58,11 @@ Connection limiting will only be enabled if both variables are integers greater 
 ```
 -e REQPERIOD=2 -e REQCOUNT=15
 ```
+You can set expirations on all messages globally with the EXPIRATION environment variable \
+Using EXPIRATION=60 will tell redis to delete each POSTed message 60 seconds after it was added
+```
+-e EXPIRATION=60
+```
 
 ## HTTPS Configuration
 In order to serve up an https socket, you must provide the key/certificate pair under /cert \

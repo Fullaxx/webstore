@@ -146,7 +146,11 @@ static int do_redis_post(wsrt_t *rt, const char *hash, const unsigned char *data
 
 	//LOCK RAI if redis calls are in their own thread, using a shared context
 	if(rt->multithreaded) { rai_lock(rc); }
-	reply = redisCommand(rc->c, "SET %s %s", hash, datastr);
+	if(rt->expiration > 0) {
+		reply = redisCommand(rc->c, "SET %s %s EX %ld", hash, datastr, rt->expiration);
+	} else {
+		reply = redisCommand(rc->c, "SET %s %s", hash, datastr);
+	}
 	if(!reply) {
 		handle_redis_error(rc);
 		err = 503;

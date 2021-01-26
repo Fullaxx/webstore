@@ -40,6 +40,7 @@ typedef struct {
 	int multithreaded;
 	int reqperiod;
 	long reqcount;
+	long expiration;
 } wsrt_t;
 
 // WebStore Request Info
