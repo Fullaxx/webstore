@@ -84,7 +84,7 @@ static char* convert_hash(char *input, int len)
 	return strdup(newhash);
 }
 
-static inline void do_del(rai_t *rc, char *hash)
+static inline void do_redis_del(rai_t *rc, char *hash)
 {
 	redisReply *reply;
 	reply = redisCommand(rc->c, "DEL %s", hash);
@@ -121,7 +121,7 @@ static char* get(wsreq_t *req, wsrt_t *rt, srci_t *ri)
 		handle_redis_error(rc);
 	} else {
 		if(reply->type == REDIS_REPLY_STRING) { page = strdup(reply->str); }
-		if(page && rt->getonce) { do_del(rc, hash); }
+		if(page && rt->getonce) { do_redis_del(rc, hash); }
 		freeReplyObject(reply);
 	}
 	if(rt->multithreaded) { rai_unlock(rc); }
