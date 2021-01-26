@@ -70,6 +70,11 @@ void handle_redis_error(rai_t *rc)
 	g_shutdown = 1;
 }
 
+#ifdef SRNODECHRONOMETRY
+int g_alarm_stats = 0;
+void print_avg_nodecb_time(void);
+#endif
+
 int g_log_sync_timer = 0;
 static void alarm_handler(int signum)
 {
@@ -224,7 +229,7 @@ static void parse_args(int argc, char **argv)
 				break;
 #ifdef SRNODECHRONOMETRY
 			case 10:
-				alarm_stats = 1;
+				g_alarm_stats = 1;
 				break;
 #endif
 			default:

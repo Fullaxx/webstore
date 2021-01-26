@@ -7,13 +7,14 @@ DBG="-ggdb3 -DDEBUG"
 CFLAGS="-Wall"
 OPTCFLAGS="${CFLAGS} ${OPT}"
 DBGCFLAGS="${CFLAGS} ${DBG}"
+# DBGCFLAGS+=" -DSRNODECHRONOMETRY"
 
 rm -f *.exe *.dbg
 
 gcc ${OPTCFLAGS} webstore*.c getopts.c searest*.c rai.c futils.c \
 -lpthread -lmicrohttpd -lhiredis -o webstore.exe
 
-gcc ${DBGCFLAGS} webstore*.c getopts.c searest*.c rai.c futils.c \
+gcc ${DBGCFLAGS} webstore*.c getopts.c searest*.c rai.c futils.c chronometry.c \
 -lpthread -lmicrohttpd -lhiredis -o webstore.dbg
 
 strip *.exe

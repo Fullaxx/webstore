@@ -29,27 +29,30 @@ sri_t *g_srv = NULL;
 wsrt_t g_rt;
 
 #ifdef SRNODECHRONOMETRY
+#include "chronometry.h"
 void print_avg_nodecb_time(void)
 {
 	long avg;
 
-	avg = searest_node_get_avg_duration(ws, "/store/128/");
-	if(avg > 0) printf("%6s: %ld\n", "128", avg);
+	if(!g_srv) { return; }
 
-	avg = searest_node_get_avg_duration(ws, "/store/160/");
-	if(avg > 0) printf("%6s: %ld\n", "160", avg);
+	avg = searest_node_get_avg_duration(g_srv, "/store/128/");
+	if(avg > 0) printf("%3s: %ldns\n", "128", avg);
 
-	avg = searest_node_get_avg_duration(ws, "/store/224/");
-	if(avg > 0) printf("%6s: %ld\n", "224", avg);
+	avg = searest_node_get_avg_duration(g_srv, "/store/160/");
+	if(avg > 0) printf("%3s: %ldns\n", "160", avg);
 
-	avg = searest_node_get_avg_duration(ws, "/store/256/");
-	if(avg > 0) printf("%6s: %ld\n", "256", avg);
+	avg = searest_node_get_avg_duration(g_srv, "/store/224/");
+	if(avg > 0) printf("%3s: %ldns\n", "224", avg);
 
-	avg = searest_node_get_avg_duration(ws, "/store/384/");
-	if(avg > 0) printf("%6s: %ld\n", "384", avg);
+	avg = searest_node_get_avg_duration(g_srv, "/store/256/");
+	if(avg > 0) printf("%3s: %ldns\n", "256", avg);
 
-	avg = searest_node_get_avg_duration(ws, "/store/512/");
-	if(avg > 0) printf("%6s: %ld\n", "512", avg);
+	avg = searest_node_get_avg_duration(g_srv, "/store/384/");
+	if(avg > 0) printf("%3s: %ldns\n", "384", avg);
+
+	avg = searest_node_get_avg_duration(g_srv, "/store/512/");
+	if(avg > 0) printf("%3s: %ldns\n", "512", avg);
 }
 #endif
 
