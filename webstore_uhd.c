@@ -90,6 +90,7 @@ void webstore_start(srv_opts_t *so)
 {
 	int z;
 
+	// Connect to Redis
 	memset(&g_rt, 0, sizeof(wsrt_t));
 	g_rt.multithreaded = so->use_threads;
 	z = rai_connect(&g_rt.rc, so->rdest, so->rport);
