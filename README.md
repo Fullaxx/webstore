@@ -68,6 +68,11 @@ Using GETONCE=1 will tell redis to delete any message after a successful GET
 ```
 -e GETONCE=1
 ```
+By default the web server code will run in a single thread \
+Set MULTITHREAD=1 to enable a new thread for each incoming connection
+```
+-e MULTITHREAD=1
+```
 
 ## HTTPS Configuration
 In order to serve up an https socket, you must provide the key/certificate pair under /cert \
