@@ -66,11 +66,11 @@ long searest_node_get_avg_duration(sri_t *ws, char *rootname)
 	unsigned long total = 0;
 
 	n = searest_node_find(ws, rootname);
-	if(!n) return -1;
+	if(!n) { return -1; }
 
 	nl_lock();
 	if(n->statsready) {
-		for(i=0; i<TIMESLOTS; i++) total += n->da[i];
+		for(i=0; i<TIMESLOTS; i++) { total += n->da[i]; }
 	}
 	nl_unlock();
 
@@ -84,7 +84,7 @@ void searest_node_save_time(srn_t *n, long duration)
 	nl_lock();
 	i = (n->dai++ % TIMESLOTS);
 	n->da[i] = duration;
-	if((n->dai > 1) && (i == 0)) n->statsready = 1;
+	if((n->dai > 1) && (i == 0)) { n->statsready = 1; }
 	nl_unlock();
 }
 #endif
@@ -92,7 +92,7 @@ void searest_node_save_time(srn_t *n, long duration)
 int searest_node_set_disabled(sri_t *ws, char *rootname)
 {
 	srn_t *n = searest_node_find(ws, rootname);
-	if(!n) return 1;
+	if(!n) { return 1; }
 
 	n->disabled = 1;
 
@@ -102,7 +102,7 @@ int searest_node_set_disabled(sri_t *ws, char *rootname)
 int searest_node_set_enabled(sri_t *ws, char *rootname)
 {
 	srn_t *n = searest_node_find(ws, rootname);
-	if(!n) return 1;
+	if(!n) { return 1; }
 
 	n->disabled = 0;
 
@@ -118,8 +118,8 @@ int searest_node_add(sri_t *ws, char *rootname, void *func, void *node_user_data
 {
 	srn_t *cursor;
 
-	if(!rootname) return 1;
-	if(!func) return 2;
+	if(!rootname) { return 1; }
+	if(!func) { return 2; }
 
 	nl_lock();
 
@@ -153,8 +153,8 @@ void searest_node_destroy_all(sri_t *ws)
 
 	cursor = ws->nodelist_head;
 	while(cursor) {
-		if(cursor->root) free(cursor->root);
-		
+		if(cursor->root) { free(cursor->root); }
+
 		prev = cursor;
 		cursor = cursor->next;
 		free(prev);
