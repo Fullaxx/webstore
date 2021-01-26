@@ -12,11 +12,15 @@ A web-based arbitrary data storage service
 ## Get the image from Docker Hub
 ```
 docker pull fullaxx/webstore
+docker pull fullaxx/webstore-get
+docker pull fullaxx/webstore-post
 ```
 
 ## Build it locally using the github repository
 ```
 docker build -f Dockerfile.webstore -t="fullaxx/webstore" github.com/Fullaxx/webstore
+docker build -f Dockerfile.wsget -t="fullaxx/webstore-get" github.com/Fullaxx/webstore
+docker build -f Dockerfile.wspost -t="fullaxx/webstore-post" github.com/Fullaxx/webstore
 ```
 
 ## Volume Options
@@ -28,17 +32,17 @@ Use the following volume option to expose it
 
 ## Server Instructions
 Start redis at 172.17.0.1:6379 \
-Bind webstore to 172.17.0.1:80 \
+Bind webstore to 51.195.74.100:80 \
 Save log file to /srv/docker/webstore/log
 ```
 docker run -d --rm --name redis -p 172.17.0.1:6379:6379 redis
-docker run -d --name webstore -e REDISIP=172.17.0.1 -p 172.17.0.1:80:8080 -v /srv/docker/webstore/log:/log fullaxx/webstore
+docker run -d --name webstore -e REDISIP=172.17.0.1 -p 51.195.74.100:80:8080 -v /srv/docker/webstore/log:/log fullaxx/webstore
 ```
 Start redis at 172.17.0.1:7777 \
-Bind webstore to 172.17.0.1:80
+Bind webstore to 51.195.74.100:80
 ```
 docker run -d --rm --name redis -p 172.17.0.1:7777:6379 redis
-docker run -d --name webstore -e REDISIP=172.17.0.1 -e REDISPORT=7777 -p 172.17.0.1:80:8080 fullaxx/webstore
+docker run -d --name webstore -e REDISIP=172.17.0.1 -e REDISPORT=7777 -p 51.195.74.100:80:8080 fullaxx/webstore
 ```
 
 ## Server Configuration
@@ -67,11 +71,24 @@ A full https example with certbot certs:
 ```
 docker run -d --rm --name redis -p 172.17.0.1:6379:6379 redis
 docker run -d --name webstore \
--p 172.17.0.1:443:8080 -e REDISIP=172.17.0.1 \
+-p 51.195.74.100:443:8080 -e REDISIP=172.17.0.1 \
 -e CERTFILE=config/live/webstore.mydomain.com/fullchain.pem \
 -e KEYFILE=config/live/webstore.mydomain.com/privkey.pem \
 -v /srv/docker/certbot:/cert \
 fullaxx/webstore
+```
+
+## Client Examples using docker
+You can test the client docker images against a running server instance. \
+The test server is hosted at webstore.dspi.org on ports 80 and 443:
+```
+docker run -it -e WSHOST=webstore.dspi.org -e WSPORT=80 -e ALG=1 -e MSG=test fullaxx/webstore-post
+docker run -it -e WSHOST=webstore.dspi.org -e WSPORT=80 -e TOKEN=098f6bcd4621d373cade4e832627b4f6 fullaxx/webstore-get
+```
+The same example using https:
+```
+docker run -it -e HTTPS=1 -e WSHOST=webstore.dspi.org -e WSPORT=443 -e ALG=1 -e MSG=test fullaxx/webstore-post
+docker run -it -e HTTPS=1 -e WSHOST=webstore.dspi.org -e WSPORT=443 -e TOKEN=098f6bcd4621d373cade4e832627b4f6 fullaxx/webstore-get
 ```
 
 ## Client Instructions
@@ -83,18 +100,18 @@ apt-get install -y build-essential libcurl4-gnutls-dev libgcrypt20-dev
 ```
 After compiling the client source code, you can run the binaries:
 ```
-WSIP="172.17.0.1"
-PORT="80"
-./ws_post.exe -H ${WSIP} -P ${PORT} -f LICENSE -a 1
-./ws_get.exe  -H ${WSIP} -P ${PORT} -t b234ee4d69f5fce4486a80fdaf4a4263 -f LICENSE.copy
+WSHOST="172.17.0.1"
+WSPORT="80"
+./ws_post.exe -H ${WSHOST} -P ${WSPORT} -f LICENSE -a 1
+./ws_get.exe  -H ${WSHOST} -P ${WSPORT} -t b234ee4d69f5fce4486a80fdaf4a4263 -f LICENSE.copy
 md5sum LICENSE LICENSE.copy
 ```
 If your webstore server is running in https mode:
 ```
-WSIP="172.17.0.1"
-PORT="443"
-./ws_post.exe -s -H ${WSIP} -P ${PORT} -f LICENSE -a 1
-./ws_get.exe  -s -H ${WSIP} -P ${PORT} -t b234ee4d69f5fce4486a80fdaf4a4263 -f LICENSE.copy
+WSHOST="172.17.0.1"
+WSPORT="443"
+./ws_post.exe -s -H ${WSHOST} -P ${WSPORT} -f LICENSE -a 1
+./ws_get.exe  -s -H ${WSHOST} -P ${WSPORT} -t b234ee4d69f5fce4486a80fdaf4a4263 -f LICENSE.copy
 md5sum LICENSE LICENSE.copy
 ```
 
@@ -131,11 +148,15 @@ These algorithm types default to the following algorithms (defined in gchash.h):
 ## URL Creation
 Examples of proper URL creation (handled in webstore_url.h) are shown here:
 ```
-./ws_post.exe -H ${WSIP} -P ${PORT} -f LICENSE -a 1
-./ws_get.exe  -H ${WSIP} -P ${PORT} -t b234ee4d69f5fce4486a80fdaf4a4263
+WSHOST="172.17.0.1"
+WSPORT="80"
+./ws_post.exe -H ${WSHOST} -P ${WSPORT} -f LICENSE -a 1
+./ws_get.exe  -H ${WSHOST} -P ${WSPORT} -t b234ee4d69f5fce4486a80fdaf4a4263
 http://172.17.0.1:80/store/128/b234ee4d69f5fce4486a80fdaf4a4263
 
-./ws_post.exe -s -H ${WSIP} -P ${PORT} -f LICENSE -a 4
-./ws_get.exe  -s -H ${WSIP} -P ${PORT} -t 8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643
+WSHOST="172.17.0.1"
+WSPORT="443"
+./ws_post.exe -s -H ${WSHOST} -P ${WSPORT} -f LICENSE -a 4
+./ws_get.exe  -s -H ${WSHOST} -P ${WSPORT} -t 8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643
 https://172.17.0.1:443/store/256/8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643
 ```
