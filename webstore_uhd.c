@@ -126,6 +126,9 @@ void webstore_start(srv_opts_t *so)
 	// Configure DEL after GET
 	if(getenv("GETONCE")) { g_rt.getonce = 1; }
 
+	// Configure immutable messages
+	if(getenv("IMMUTABLE")) { g_rt.immutable = 1; }
+
 	// Configure HTTPS
 	if(so->certfile && so->keyfile) { activate_https(so); }
 

@@ -42,6 +42,7 @@ typedef struct {
 	long reqcount;
 	long expiration;
 	int getonce;
+	int immutable;
 } wsrt_t;
 
 // WebStore Request Info

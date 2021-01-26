@@ -159,15 +159,22 @@ static int do_redis_post(wsrt_t *rt, const char *hash, const unsigned char *data
 
 	//LOCK RAI if redis calls are in their own thread, using a shared context
 	if(rt->multithreaded) { rai_lock(rc); }
-	if(rt->expiration > 0) {
+	if((rt->expiration) && (rt->immutable)) {
+		reply = redisCommand(rc->c, "SET %s %s EX %ld NX", hash, datastr, rt->expiration);
+	} else if(rt->expiration) {
 		reply = redisCommand(rc->c, "SET %s %s EX %ld", hash, datastr, rt->expiration);
+	} else if(rt->immutable) {
+		reply = redisCommand(rc->c, "SET %s %s NX", hash, datastr);
 	} else {
 		reply = redisCommand(rc->c, "SET %s %s", hash, datastr);
 	}
+
 	if(!reply) {
 		err = 503;
 		handle_redis_error(rc);
 	} else {
+		if(reply->type == REDIS_REPLY_ERROR) { err = 417; }
+		if(reply->type == REDIS_REPLY_NIL) { err = 304; }
 		if(reply->type == REDIS_REPLY_STATUS) {
 			if(strncmp("OK", reply->str, 2) == 0) { err = 0; }
 		}
@@ -221,8 +228,23 @@ static char* post(wsreq_t *req, wsrt_t *rt, srci_t *ri)
 	free(hash);
 	if(z) {
 		srci_set_return_code(ri, z);
+		switch(z) {
+			case 304:
+				log_add(WSLOG_INFO, "%s %d POST %s NOTMOD", srci_get_client_ip(ri), z, req->url);
+				return strdup("not modified");
+				break;
+			case 417:
+				return strdup("redis reply error");
+				break;
+			case 503:
+				return strdup("service unavailable");
+				break;
+			default:
+				return strdup("internal server error");
+		}
+		/*if(z == 304) { return strdup("not modified"); }
 		if(z == 503) { return strdup("service unavailable"); }
-		else { return strdup("internal server error"); }
+		else { return strdup("internal server error"); }*/
 	}
 
 	srci_set_return_code(ri, MHD_HTTP_OK);
