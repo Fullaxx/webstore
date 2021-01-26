@@ -103,9 +103,9 @@ docker run -it -e HTTPS=1 -e WSHOST=webstore.dspi.org -e WSPORT=443 -e TOKEN=098
 
 ## Client Instructions
 In order to use the client, you will need to compile against libcurl and libgcrypt \
-In Ubuntu, you would install build-essential libcurl4-gnutls-dev and libgcrypt20-dev \
+In Ubuntu, you would install build-essential ca-certificates libcurl4-gnutls-dev and libgcrypt20-dev \
 ```
-apt-get install -y build-essential libcurl4-gnutls-dev libgcrypt20-dev
+apt-get install -y build-essential ca-certificates libcurl4-gnutls-dev libgcrypt20-dev
 ./compile_clients.sh
 ```
 After compiling the client source code, you can run the binaries:
