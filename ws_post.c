@@ -44,42 +44,20 @@ int g_verbosity = 1;
 long g_msglen = 0;
 int g_secure = 0;
 
-// This must be free()'d
-static char* encode_msg_and_post(char *host, unsigned short port, int alg, char *msg, size_t len)
+static int post_msg(char *url, char *z85block)
 {
-	int z = 1;
-	int httperr = 0;
+	int curlerr, httperr = 0;
 	curlresp_t resp;
 	curlpost_t post;
-	size_t bufsize, encbytes;
-	char *token = NULL;
-	char *url = NULL;
-	char *enc = NULL;
 
-	// Encode our data into a z85 message block
-	bufsize = Z85_encode_with_padding_bound(len) + 1;
-	enc = malloc(bufsize);
-	encbytes = Z85_encode_with_padding(msg, enc, len);
-	if(!encbytes) { goto bail; }
-	enc[encbytes] = 0;
-
-	// Create the Token and use it to create the URL
-	if(g_token) { token = strdup(g_token); }
-	else { token = create_token(alg, msg, len); }
-	if(!token) { goto bail; }
-
-	url = create_url(host, port, token, g_secure);
-	if(!url) {
-		fprintf(stderr, "Invalid URL!\n");
-		goto bail;
-	}
+	// Prepare our data structures
+	memset(&resp, 0, sizeof(curlresp_t));
+	post.data = (unsigned char *)z85block;
+	post.size = strlen(z85block);
 
 	// Submit our z85 message to webstore
-	memset(&resp, 0, sizeof(curlresp_t));
-	post.data = (unsigned char *)enc;
-	post.size = encbytes;
-	z = ws_curl_post(url, &resp, &post);
-	if(z) {
+	curlerr = ws_curl_post(url, &resp, &post);
+	if(curlerr) {
 		fprintf(stderr, "ws_curl_get() failed!\n");
 	} else {
 		if(resp.http_code != 200) {
@@ -92,13 +70,56 @@ static char* encode_msg_and_post(char *host, unsigned short port, int alg, char 
 		}
 	}
 
-	// Check for error conditions
-	if(z || httperr) { free(token); token = NULL; }
-
-bail:
+	// Clean up and check for error conditions
 	if(resp.page) { free(resp.page); }
-	if(url) { free(url); }
-	if(enc) { free(enc); }
+	if(curlerr || httperr) { return 1; }
+
+	return 0;
+}
+
+// This must be free()'d
+static char* encode_msg(char *msg, size_t len)
+{
+	char *z85block;
+	size_t bufsize, encbytes;
+
+	// Encode our data into a z85 message block
+	bufsize = Z85_encode_with_padding_bound(len) + 1;
+	z85block = malloc(bufsize);
+	encbytes = Z85_encode_with_padding(msg, z85block, len);
+	if(!encbytes) { free(z85block); return NULL; }
+	z85block[encbytes] = 0;
+	return z85block;
+}
+
+// This must be free()'d
+static char* encode_msg_and_post(char *host, unsigned short port, int alg, char *msg, size_t len)
+{
+	int err;
+	char *z85block;
+	char *token;
+	char *url;
+
+	z85block = encode_msg(msg, len);
+	if(!z85block) { fprintf(stderr, "encode_msg() failed!"); return NULL; }
+
+	// Create the Token and use it to create the URL
+	if(g_token) { token = strdup(g_token); }
+	else { token = create_token(alg, msg, len); }
+	if(!token) { fprintf(stderr, "create_token() failed!"); return NULL; }
+
+	url = create_url(host, port, token, g_secure);
+	if(!url) {
+		fprintf(stderr, "create_url(%s, %u, %s) failed!\n", host, port, token);
+		free(token); token = NULL;
+	}
+
+	if(url) {
+		err = post_msg(url, z85block);
+		if(err) { free(token); token = NULL; }
+	}
+
+	if(z85block) { free(z85block); }
 	return token;
 }
 
