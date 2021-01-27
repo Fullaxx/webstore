@@ -196,7 +196,7 @@ static char* post(wsreq_t *req, wsrt_t *rt, srci_t *ri)
 	// Check the URL length
 	if(req->urllen != req->hashlen) {
 		srci_set_return_code(ri, MHD_HTTP_BAD_REQUEST);
-		return strdup("malformed request - bad url");
+		return strdup("malformed request - invalid url");
 	}
 
 	// Check the length of uploaded data
@@ -211,7 +211,7 @@ static char* post(wsreq_t *req, wsrt_t *rt, srci_t *ri)
 	z = Z85_validate(dataptr, datalen);
 	if(z) {
 		srci_set_return_code(ri, MHD_HTTP_BAD_REQUEST);
-		return strdup("malformed request - data did not validate");
+		return strdup("malformed request - invalid Z85");
 	}
 
 #ifdef DEBUG
@@ -221,7 +221,7 @@ static char* post(wsreq_t *req, wsrt_t *rt, srci_t *ri)
 	hash = convert_hash(req->url, req->urllen);
 	if(!hash) {
 		srci_set_return_code(ri, MHD_HTTP_BAD_REQUEST);
-		return strdup("malformed request - bad url");
+		return strdup("malformed request - invalid token");
 	}
 
 	z = do_redis_post(rt, hash, dataptr, datalen);
