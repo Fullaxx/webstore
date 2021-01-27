@@ -29,28 +29,28 @@
 static size_t save_response(void *ptr, size_t size, size_t nmemb, void *user_data)
 {
 	long incdatasize, newpagesize;
-	respdata_t *rdata = (respdata_t *)user_data;
+	curlresp_t *r = (curlresp_t *)user_data;
 
 	//realloc page location
 	incdatasize = size*nmemb;
-	newpagesize = rdata->bytecount + incdatasize;
-	rdata->page = realloc(rdata->page, newpagesize+1);	// +1 = make room for a NULL byte
+	newpagesize = r->bytecount + incdatasize;
+	r->page = realloc(r->page, newpagesize+1);	// +1 = make room for a NULL byte
 
 	//save curl data buffer
-	memcpy(rdata->page+(rdata->bytecount), ptr, incdatasize);
-	rdata->page[newpagesize] = 0;	// tack on NULL byte
+	memcpy(r->page+(r->bytecount), ptr, incdatasize);
+	r->page[newpagesize] = 0;	// tack on NULL byte
 
 	//save new page size
-	rdata->bytecount = newpagesize;
+	r->bytecount = newpagesize;
 
 #ifdef CURL_PRINT_DATA_INCOMING
-	printf("%s\n", rdata->page);
+	printf("%s\n", r->page);
 #endif
 
 	return incdatasize;
 }
 
-int ws_curl_get(char *url, respdata_t *rdata)
+int ws_curl_get(char *url, curlresp_t *r)
 {
 	CURL *ch;
 	CURLcode res;
@@ -68,26 +68,27 @@ int ws_curl_get(char *url, respdata_t *rdata)
 	curl_easy_setopt(ch, CURLOPT_NOPROGRESS, 1L);
 	curl_easy_setopt(ch, CURLOPT_FOLLOWLOCATION, 0L);
 	curl_easy_setopt(ch, CURLOPT_WRITEFUNCTION, save_response);
-	curl_easy_setopt(ch, CURLOPT_WRITEDATA, rdata);
+	curl_easy_setopt(ch, CURLOPT_WRITEDATA, r);
 	//CURLcode curl_easy_setopt(ch, CURLOPT_TIMEOUT, long timeout);
 
 	res = curl_easy_perform(ch);
 	if(res == CURLE_OK) {
-		curl_easy_getinfo(ch, CURLINFO_RESPONSE_CODE, &rdata->http_code);
+		curl_easy_getinfo(ch, CURLINFO_RESPONSE_CODE, &r->http_code);
 	} else {
 		retval = 2;
 		fprintf(stderr, "curl_easy_perform() failed! %s\n", curl_easy_strerror(res));
-		if(rdata->page) { free(rdata->page); rdata->page = NULL; }
+		if(r->page) { free(r->page); r->page = NULL; }
 	}
 
 #ifdef CURL_PRINT_DATA_OUTPUT
-	if(rdata->page) { printf("%s\n\n", rdata->page); }
+	if(r->page) { printf("%s\n\n", r->page); }
 #endif
 
 	curl_easy_cleanup(ch);
 	return retval;
 }
 
+#if 0
 // We do this so that libcurl does not output to stdout
 static size_t dump_data(void *ptr, size_t size, size_t nmemb, void *user_data)
 {
@@ -96,8 +97,9 @@ static size_t dump_data(void *ptr, size_t size, size_t nmemb, void *user_data)
 
 	return bytes;
 }
+#endif
 
-int ws_curl_post(char *url, unsigned char *postdata, long datasize, long *httpcode)
+int ws_curl_post(char *url, curlresp_t *r, curlpost_t *p)
 {
 	CURL *ch;
 	CURLcode res;
@@ -114,19 +116,26 @@ int ws_curl_post(char *url, unsigned char *postdata, long datasize, long *httpco
 	curl_easy_setopt(ch, CURLOPT_NOSIGNAL, 1L);
 	curl_easy_setopt(ch, CURLOPT_NOPROGRESS, 1L);
 	curl_easy_setopt(ch, CURLOPT_FOLLOWLOCATION, 0L);
-	curl_easy_setopt(ch, CURLOPT_POSTFIELDSIZE, datasize);
-	curl_easy_setopt(ch, CURLOPT_POSTFIELDS, postdata);
-	curl_easy_setopt(ch, CURLOPT_WRITEFUNCTION, dump_data);
+	curl_easy_setopt(ch, CURLOPT_POSTFIELDSIZE, p->size);
+	curl_easy_setopt(ch, CURLOPT_POSTFIELDS, p->data);
+	curl_easy_setopt(ch, CURLOPT_WRITEFUNCTION, save_response);
+	curl_easy_setopt(ch, CURLOPT_WRITEDATA, r);
+	//curl_easy_setopt(ch, CURLOPT_WRITEFUNCTION, dump_data);
 	//curl_easy_setopt(ch, CURLOPT_WRITEDATA, opt);
 	//if(opt->headerlist) curl_easy_setopt(ch, CURLOPT_HTTPHEADER, opt->headerlist);
 
 	res = curl_easy_perform(ch);
 	if(res == CURLE_OK) {
-		if(httpcode) { curl_easy_getinfo(ch, CURLINFO_RESPONSE_CODE, httpcode); }
+		curl_easy_getinfo(ch, CURLINFO_RESPONSE_CODE, &r->http_code);
 	} else {
-		fprintf(stderr, "curl_easy_perform() failed! %s\n", curl_easy_strerror(res));
 		retval = 2;
+		fprintf(stderr, "curl_easy_perform() failed! %s\n", curl_easy_strerror(res));
+		if(r->page) { free(r->page); r->page = NULL; }
 	}
+
+#ifdef CURL_PRINT_DATA_OUTPUT
+	if(r->page) { printf("%s\n\n", r->page); }
+#endif
 
 	curl_easy_cleanup(ch);
 	return retval;

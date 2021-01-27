@@ -49,7 +49,8 @@ static char* encode_msg_and_post(char *host, unsigned short port, int alg, char 
 {
 	int z = 1;
 	int httperr = 0;
-	long httpcode = 0;
+	curlresp_t resp;
+	curlpost_t post;
 	size_t bufsize, encbytes;
 	char *token = NULL;
 	char *url = NULL;
@@ -73,12 +74,21 @@ static char* encode_msg_and_post(char *host, unsigned short port, int alg, char 
 		goto bail;
 	}
 
-	// Submit our z85 message to the REST service
-	z = ws_curl_post(url, (unsigned char *)enc, (long)encbytes, &httpcode);
-	if(z == 0) {
-		if(httpcode != 200) {
+	// Submit our z85 message to webstore
+	memset(&resp, 0, sizeof(curlresp_t));
+	post.data = (unsigned char *)enc;
+	post.size = encbytes;
+	z = ws_curl_post(url, &resp, &post);
+	if(z) {
+		fprintf(stderr, "ws_curl_get() failed!\n");
+	} else {
+		if(resp.http_code != 200) {
 			httperr = 1;
-			fprintf(stderr, "HTTP status code: %ld\n", httpcode);
+			if((resp.http_code == 304) && (!resp.page)) {
+				// I'm not sure why this doesnt come through properly
+				resp.page = strdup("object immutable - not modified");
+			}
+			fprintf(stderr, "HTTP Error %ld: %s\n", resp.http_code, resp.page);
 		}
 	}
 
@@ -86,6 +96,7 @@ static char* encode_msg_and_post(char *host, unsigned short port, int alg, char 
 	if(z || httperr) { free(token); token = NULL; }
 
 bail:
+	if(resp.page) { free(resp.page); }
 	if(url) { free(url); }
 	if(enc) { free(enc); }
 	return token;

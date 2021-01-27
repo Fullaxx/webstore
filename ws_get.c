@@ -36,14 +36,14 @@ char *g_filename = NULL;
 int g_secure = 0;
 
 // Take the server response and save it to file or print to stdout
-static void decode_page(respdata_t *rdata)
+static void decode_page(curlresp_t *r)
 {
 	char *dec;
 	size_t bufsize, decbytes;
 
-	bufsize = Z85_decode_with_padding_bound(rdata->page, rdata->bytecount) + 1;
+	bufsize = Z85_decode_with_padding_bound(r->page, r->bytecount) + 1;
 	dec = malloc(bufsize);
-	decbytes = Z85_decode_with_padding(rdata->page, dec, rdata->bytecount);
+	decbytes = Z85_decode_with_padding(r->page, dec, r->bytecount);
 	if(decbytes == 0) { fprintf(stderr, "nothing to decode!\n"); goto bail; }
 	dec[decbytes] = 0;	//if STRING and we have enough space to add the NULL
 
@@ -65,10 +65,10 @@ bail:
 int main(int argc, char *argv[])
 {
 	int z, retval = 0;
-	respdata_t rdata;
+	curlresp_t resp;
 	char *url = NULL;
 
-	memset(&rdata, 0, sizeof(respdata_t));
+	memset(&resp, 0, sizeof(curlresp_t));
 	parse_args(argc, argv);
 
 	url = create_url(g_host, g_port, g_token, g_secure);
@@ -77,24 +77,24 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	z = ws_curl_get(url, &rdata);
+	z = ws_curl_get(url, &resp);
 	if(z) {
 		fprintf(stderr, "ws_curl_get() failed!\n");
 		retval = 1;
 	} else {
-		if(rdata.http_code != 200) {
-			fprintf(stderr, "HTTP Error %ld: %s\n", rdata.http_code, rdata.page);
+		if(resp.http_code != 200) {
+			fprintf(stderr, "HTTP Error %ld: %s\n", resp.http_code, resp.page);
 			retval = 1;
 		} else {
-			decode_page(&rdata);
+			decode_page(&resp);
 		}
 	}
 
-	if(url) free(url);
-	if(rdata.page) free(rdata.page);
-	if(g_host) free(g_host);
-	if(g_token) free(g_token);
-	if(g_filename) free(g_filename);
+	if(url) { free(url); }
+	if(resp.page) { free(resp.page); }
+	if(g_host) { free(g_host); }
+	if(g_token) { free(g_token); }
+	if(g_filename) { free(g_filename); }
 	return retval;
 }
 

@@ -23,9 +23,14 @@ typedef struct {
 	long bytecount;
 	char *page;	// free() this
 	long http_code;
-} respdata_t;
+} curlresp_t;
 
-int ws_curl_get(char *, respdata_t *);
-int ws_curl_post(char *, unsigned char *, long, long *);
+typedef struct {
+	unsigned char *data;
+	long size;
+} curlpost_t;
+
+int ws_curl_get(char *, curlresp_t *);
+int ws_curl_post(char *, curlresp_t *, curlpost_t *);
 
 #endif
