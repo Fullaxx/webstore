@@ -123,11 +123,11 @@ void webstore_start(srv_opts_t *so)
 	if(getenv("EXPIRATION")) { g_rt.expiration = atol(getenv("EXPIRATION")); }
 	if(g_rt.expiration < 0) { g_rt.expiration = 0; }
 
-	// Configure DELETE after GET
-	if(getenv("MISSIONIMPOSSIBLE")) { g_rt.missionimpossible = 1; }
-
 	// Configure immutable messages
 	if(getenv("IMMUTABLE")) { g_rt.immutable = 1; }
+
+	// Configure [B]urn [A]fter [R]eading (DELETE after GET)
+	if(getenv("BAR")) { g_rt.bar = 1; }
 
 	// Configure HTTPS
 	if(so->certfile && so->keyfile) { activate_https(so); }

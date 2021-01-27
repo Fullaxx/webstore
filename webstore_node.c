@@ -121,7 +121,7 @@ static char* get(wsreq_t *req, wsrt_t *rt, srci_t *ri)
 		handle_redis_error(rc);
 	} else {
 		if(reply->type == REDIS_REPLY_STRING) { page = strdup(reply->str); }
-		if(page && rt->missionimpossible) { do_redis_del(rc, hash); }
+		if(page && rt->bar) { do_redis_del(rc, hash); }
 		freeReplyObject(reply);
 	}
 	if(rt->multithreaded) { rai_unlock(rc); }
@@ -139,7 +139,7 @@ static char* get(wsreq_t *req, wsrt_t *rt, srci_t *ri)
 	}
 
 	srci_set_return_code(ri, MHD_HTTP_OK);
-	if(rt->missionimpossible) { log_fmt = "%s %d GET %s DELETED"; }
+	if(rt->bar) { log_fmt = "%s %d GET %s BURNT"; }
 	else { log_fmt = "%s %d GET %s"; }
 	snprintf(log_entry, sizeof(log_entry), log_fmt, srci_get_client_ip(ri), MHD_HTTP_OK, req->url);
 	log_add(WSLOG_INFO, "%s", log_entry);

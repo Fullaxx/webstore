@@ -63,16 +63,16 @@ Using EXPIRATION=60 will tell redis to delete each message 60 seconds after it w
 ```
 -e EXPIRATION=60
 ```
-You can set a flag that will allow only 1 GET per message \
-Using MISSIONIMPOSSIBLE=1 will tell redis to delete the retrieved message after a successful GET
-```
--e MISSIONIMPOSSIBLE=1
-```
 You can set a flag that will make all messages immutable \
 Using IMMUTABLE=1 will allow a successful POST only if that hash doesnt already exist in redis \
 If IMMUTABLE=1 is set any incoming POST with a hash that already exists in redis will be returned with 304
 ```
 -e IMMUTABLE=1
+```
+You can set a flag that will allow only 1 GET per message \
+Using BAR=1 will tell redis to delete the retrieved message after a successful GET
+```
+-e BAR=1
 ```
 By default the web server code will run in a single thread \
 Set MULTITHREAD=1 to enable a new thread for each incoming connection
