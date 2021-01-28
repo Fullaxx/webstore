@@ -123,7 +123,7 @@ After compiling the client source code, you can run the binaries:
 ```
 WSHOST="172.17.0.1"
 WSPORT="80"
-./ws_post.exe -H ${WSHOST} -P ${WSPORT} -f LICENSE -a 1
+./ws_post.exe -H ${WSHOST} -P ${WSPORT} -v -c -f LICENSE -a 1
 ./ws_get.exe  -H ${WSHOST} -P ${WSPORT} -t b234ee4d69f5fce4486a80fdaf4a4263 -f LICENSE.copy
 md5sum LICENSE LICENSE.copy
 ```
@@ -131,7 +131,7 @@ If your webstore server is running in https mode:
 ```
 WSHOST="172.17.0.1"
 WSPORT="443"
-./ws_post.exe -s -H ${WSHOST} -P ${WSPORT} -f LICENSE -a 1
+./ws_post.exe -s -H ${WSHOST} -P ${WSPORT} -v -c -f LICENSE -a 1
 ./ws_get.exe  -s -H ${WSHOST} -P ${WSPORT} -t b234ee4d69f5fce4486a80fdaf4a4263 -f LICENSE.copy
 md5sum LICENSE LICENSE.copy
 ```

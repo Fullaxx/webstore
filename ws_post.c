@@ -95,6 +95,7 @@ static char* encode_msg(char *msg, size_t len)
 
 	// Shall we compress this data?
 	if(g_comp) {
+		if(g_verbosity >= 2) { printf("Compressing: %lu bytes\n", len); }
 		mz = mza_squash((unsigned char *)msg, len);
 		if(!mz) { fprintf(stderr, "mza_squash() returned NULL!"); return NULL; }
 		if((!mz->comp_data) || (!mz->comp_len)) {
