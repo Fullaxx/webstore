@@ -86,7 +86,7 @@ static char* encode_msg(char *msg, size_t len)
 	size_t bufsize, encbytes;
 
 	// Encode our data into a z85 message block
-	bufsize = Z85_encode_with_padding_bound(len) + 1;
+	bufsize = 1 + Z85_encode_with_padding_bound(len);
 	z85block = malloc(bufsize);
 	encbytes = Z85_encode_with_padding(msg, z85block, len);
 	if(!encbytes) { free(z85block); return NULL; }

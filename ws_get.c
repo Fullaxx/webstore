@@ -35,31 +35,48 @@ char *g_token = NULL;
 char *g_filename = NULL;
 int g_secure = 0;
 
-// Take the server response and save it to file or print to stdout
-static void decode_page(curlresp_t *r)
+// Decode what the server gave us
+// This must be free()'d
+char *decode_msg(char *msg, size_t len, size_t *bytes)
 {
 	char *dec;
 	size_t bufsize, decbytes;
 
-	bufsize = Z85_decode_with_padding_bound(r->page, r->bytecount) + 1;
+	bufsize = 1 + Z85_decode_with_padding_bound(msg, len);
 	dec = malloc(bufsize);
-	decbytes = Z85_decode_with_padding(r->page, dec, r->bytecount);
-	if(decbytes == 0) { fprintf(stderr, "nothing to decode!\n"); goto bail; }
-	dec[decbytes] = 0;	//if STRING and we have enough space to add the NULL
-
-	if(g_filename) {
-		FILE *f = NULL;
-		f = fopen(g_filename, "w");
-		if(f) {
-			fwrite(dec, decbytes, 1, f);
-			fclose(f);
-		} else { fprintf(stderr, "fopen(%s) failed!!\n", g_filename); goto bail; }
-	} else {
-		printf("%s", dec);
+	decbytes = Z85_decode_with_padding(msg, dec, len);
+	if(decbytes == 0) {
+		fprintf(stderr, "Z85_decode_with_padding() failed!\n");
+		free(dec);
+		return NULL;
 	}
 
-bail:
-	free(dec);
+	dec[decbytes] = 0;
+	*bytes = decbytes;
+	return dec;
+}
+
+// Take the decoded response and save it to file or print to stdout
+static void handle_page(curlresp_t *r)
+{
+	FILE *f;
+	char *data;
+	size_t bytes = 0;
+
+	data = decode_msg(r->page, r->bytecount, &bytes);
+	if(!data) { return; }
+
+	if(g_filename) {
+		f = fopen(g_filename, "w");
+		if(f) {
+			fwrite(data, bytes, 1, f);
+			fclose(f);
+		} else { fprintf(stderr, "fopen(%s, w) failed!\n", g_filename); }
+	} else {
+		printf("%s", data);
+	}
+
+	free(data);
 }
 
 int main(int argc, char *argv[])
@@ -86,7 +103,7 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "HTTP Error %ld: %s\n", resp.http_code, resp.page);
 			retval = 1;
 		} else {
-			decode_page(&resp);
+			handle_page(&resp);
 		}
 	}
 
