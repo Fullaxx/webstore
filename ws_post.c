@@ -55,6 +55,8 @@ static int post_msg(char *url, char *z85block)
 	post.data = (unsigned char *)z85block;
 	post.size = strlen(z85block);
 
+	if(g_verbosity >= 2) { printf("Uploading: %ld bytes\n", post.size); }
+
 	// Submit our z85 message to webstore
 	curlerr = ws_curl_post(url, &resp, &post);
 	if(curlerr) {
