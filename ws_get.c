@@ -35,6 +35,32 @@ char *g_token = NULL;
 char *g_filename = NULL;
 int g_secure = 0;
 
+#ifdef MINIZ_COMPRESSION
+#include "compression.h"
+// This must be free()'d
+char* inflate_msg(unsigned char *pack, size_t *bytes)
+{
+	char *data;
+	md_t *mz;
+
+	mz = mza_restore(pack, *bytes, 0);	// Import the compressed buf/size
+	free(pack);	// Properly Clean Up
+	if(!mz) { fprintf(stderr, "mza_restore() returned NULL!"); return NULL; }
+	if((!mz->orig_data) || (!mz->orig_len)) {
+		fprintf(stderr, "mza_restore() failed!");
+		mza_free(mz);
+		return NULL;
+	}
+
+	// Reset the output
+	*bytes = mz->orig_len;
+	data = calloc(1, *bytes + 1);
+	memcpy(data, mz->orig_data, *bytes);
+	mza_free(mz);
+	return data;
+}
+#endif
+
 // Decode what the server gave us
 // This must be free()'d
 char *decode_msg(char *msg, size_t len, size_t *bytes)
@@ -65,6 +91,13 @@ static void handle_page(curlresp_t *r)
 
 	data = decode_msg(r->page, r->bytecount, &bytes);
 	if(!data) { return; }
+
+#ifdef MINIZ_COMPRESSION
+	if((bytes > 6) && (data[0] == 0x78) && (data[1] == 0x01)) {
+		data = inflate_msg((unsigned char *)data, &bytes);
+		if(!data) { return; }
+	}
+#endif
 
 	if(g_filename) {
 		f = fopen(g_filename, "w");

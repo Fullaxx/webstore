@@ -32,6 +32,11 @@
 #include "curl_ops.h"
 #include "gchash.h"
 
+#ifdef MINIZ_COMPRESSION
+#include "compression.h"
+int g_comp = 0;
+#endif
+
 static void parse_args(int argc, char **argv);
 
 char *g_host = NULL;
@@ -85,10 +90,31 @@ static char* encode_msg(char *msg, size_t len)
 	char *z85block;
 	size_t bufsize, encbytes;
 
+#ifdef MINIZ_COMPRESSION
+	md_t *mz = NULL;
+
+	// Shall we compress this data?
+	if(g_comp) {
+		mz = mza_squash((unsigned char *)msg, len);
+		if(!mz) { fprintf(stderr, "mza_squash() returned NULL!"); return NULL; }
+		if((!mz->comp_data) || (!mz->comp_len)) {
+			fprintf(stderr, "mza_squash() failed!");
+			mza_free(mz);
+			return NULL;
+		}
+
+		msg = (char *)mz->comp_data;
+		len = mz->comp_len;
+	}
+#endif
+
 	// Encode our data into a z85 message block
 	bufsize = 1 + Z85_encode_with_padding_bound(len);
 	z85block = malloc(bufsize);
 	encbytes = Z85_encode_with_padding(msg, z85block, len);
+#ifdef MINIZ_COMPRESSION
+	if(mz) { mza_free(mz); }
+#endif
 	if(!encbytes) { free(z85block); return NULL; }
 	z85block[encbytes] = 0;
 	return z85block;
@@ -165,16 +191,19 @@ static int valid_token(char *token)
 
 struct options opts[] = 
 {
-	{ 1, "host",	"Host to Connect to",			"H", 1 },
-	{ 2, "port",	"Port to Connect to",			"P", 1 },
-	{ 3, "alg",		"Algorithm to use (1 - 6)",		"a", 1 },
-	{ 4, "file",	"File to encode and post",		"f", 1 },
-	{ 5, "msg",		"Message to encode and post",	"m", 1 },
-	{ 6, "token",	"Use this token when posting",	"t", 1 },
-	{ 7, "https",	"Use HTTPS",					"s", 0 },
-	{ 8, "quiet",	"Decrease verbosity",			"q", 0 },
-	{ 9, "verbose",	"Increase verbosity",			"v", 0 },
-	{ 0, NULL,		NULL,							NULL, 0 }
+	{  1, "host",		"Host to Connect to",			"H", 1 },
+	{  2, "port",		"Port to Connect to",			"P", 1 },
+	{  3, "alg",		"Algorithm to use (1 - 6)",		"a", 1 },
+	{  4, "file",		"File to encode and post",		"f", 1 },
+	{  5, "msg",		"Message to encode and post",	"m", 1 },
+	{  6, "token",		"Use this token when posting",	"t", 1 },
+	{  7, "https",		"Use HTTPS",					"s", 0 },
+#ifdef MINIZ_COMPRESSION
+	{  8, "comp",		"Use compression",				"c", 0 },
+#endif
+	{ 10, "quiet",		"Decrease verbosity",			"q", 0 },
+	{ 11, "verbose",	"Increase verbosity",			"v", 0 },
+	{ 0, NULL,		NULL,								NULL, 0 }
 };
 
 static void parse_args(int argc, char **argv)
@@ -214,10 +243,15 @@ static void parse_args(int argc, char **argv)
 			case 7:
 				g_secure = 1;
 				break;
+#ifdef MINIZ_COMPRESSION
 			case 8:
+				g_comp = 1;
+				break;
+#endif
+			case 10:
 				g_verbosity = 0;
 				break;
-			case 9:
+			case 11:
 				g_verbosity = 2;
 				break;
 			default:
