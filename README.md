@@ -1,36 +1,31 @@
 # webstore
-A web-based arbitrary data storage service
+A web-based arbitrary data storage/retrieval service and client built from
+* [libmicrohttpd](https://www.gnu.org/software/libmicrohttpd/) \
+* [libgcrypt](https://gnupg.org/software/libgcrypt/index.html) \
+* [redis](https://redis.io/)
 
+Webstore consists of 3 components (server, GET client, POST client) which you can compile yourself
+or use Docker to run them in a pre-built image.
+
+# Using Webstore Docker Containers
+The easiest way to work with the webstore components is by using Docker.
+You can pull the base docker image and immediately begin using the project.
 ## Base Docker Image
 [Ubuntu](https://hub.docker.com/_/ubuntu) 20.04 (x64)
-
-## Software
-[libmicrohttpd](https://www.gnu.org/software/libmicrohttpd/) \
-[libgcrypt](https://gnupg.org/software/libgcrypt/index.html) \
-[redis](https://redis.io/)
-
 ## Get the image from Docker Hub
 ```
 docker pull fullaxx/webstore
 docker pull fullaxx/webstore-get
 docker pull fullaxx/webstore-post
 ```
-
-## Build it locally using the github repository
+## Or Build it locally using the github repository
 ```
 docker build -f Dockerfile.webstore -t="fullaxx/webstore" github.com/Fullaxx/webstore
 docker build -f Dockerfile.wsget -t="fullaxx/webstore-get" github.com/Fullaxx/webstore
 docker build -f Dockerfile.wspost -t="fullaxx/webstore-post" github.com/Fullaxx/webstore
 ```
-
-## Volume Options
-webstore will create a log file in /log/ \
-Use the following volume option to expose it
-```
--v /srv/docker/webstore/log:/log
-```
-
-## Server Instructions
+## Run the Containers
+### Server
 Start redis at 172.17.0.1:6379 \
 Bind webstore to 51.195.74.100:80 \
 Save log file to /srv/docker/webstore/log
@@ -44,8 +39,58 @@ Bind webstore to 51.195.74.100:80
 docker run -d --rm --name redis -p 172.17.0.1:7777:6379 redis
 docker run -d --name webstore -e REDISIP=172.17.0.1 -e REDISPORT=7777 -p 51.195.74.100:80:8080 fullaxx/webstore
 ```
+### Clients for GET and POST
+You can test the client docker images against a running server instance \
+The test server is hosted at webstore.dspi.org on ports 80 and 443:
+```
+docker run -it -e WSHOST=webstore.dspi.org -e WSPORT=80 -e ALG=1 -e MSG=test fullaxx/webstore-post
+docker run -it -e WSHOST=webstore.dspi.org -e WSPORT=80 -e TOKEN=098f6bcd4621d373cade4e832627b4f6 fullaxx/webstore-get
+```
+The same example using https:
+```
+docker run -it -e HTTPS=1 -e WSHOST=webstore.dspi.org -e WSPORT=443 -e ALG=1 -e MSG=test fullaxx/webstore-post
+docker run -it -e HTTPS=1 -e WSHOST=webstore.dspi.org -e WSPORT=443 -e TOKEN=098f6bcd4621d373cade4e832627b4f6 fullaxx/webstore-get
+```
 
-## Server Configuration
+## Other Information about the Containers
+### Volume Options
+webstore will create a log file in /log/ \
+Use the following volume option to expose it
+```
+-v /srv/docker/webstore/log:/log
+```
+
+
+# Manual Compilation Client Instructions
+If you don't have access to or don't want to use the Docker containers, you can
+compile the project manually.
+
+## Install Dependencies and Compile
+In order to use the client, you will need to compile against libcurl and libgcrypt \
+In Ubuntu, you would install build-essential ca-certificates libcurl4-gnutls-dev and libgcrypt20-dev \
+```
+apt-get install -y build-essential ca-certificates libcurl4-gnutls-dev libgcrypt20-dev
+./compile_clients.sh
+```
+## Run the Binaries
+After compiling the client source code, you can run the binaries:
+```
+WSHOST="172.17.0.1"
+WSPORT="80"
+./ws_post.exe -H ${WSHOST} -P ${WSPORT} -v -c -f LICENSE -a 1
+./ws_get.exe  -H ${WSHOST} -P ${WSPORT} -t b234ee4d69f5fce4486a80fdaf4a4263 -f LICENSE.copy
+md5sum LICENSE LICENSE.copy
+```
+If your webstore server is running in https mode:
+```
+WSHOST="172.17.0.1"
+WSPORT="443"
+./ws_post.exe -s -H ${WSHOST} -P ${WSPORT} -v -c -f LICENSE -a 1
+./ws_get.exe  -s -H ${WSHOST} -P ${WSPORT} -t b234ee4d69f5fce4486a80fdaf4a4263 -f LICENSE.copy
+md5sum LICENSE LICENSE.copy
+```
+
+# Advanced Configuration Options
 The default POST upload data limit is 20 MiB or (20\*1024\*1024) \
 You can set this to any value with the MAXPOSTSIZE environment variable
 ```
@@ -79,7 +124,6 @@ Set MULTITHREAD=1 to enable a new thread for each incoming connection
 ```
 -e MULTITHREAD=1
 ```
-
 ## HTTPS Configuration
 In order to serve up an https socket, you must provide the key/certificate pair under /cert \
 Use the following options to provide the files under /cert
@@ -98,44 +142,6 @@ docker run -d --name webstore \
 -v /srv/docker/certbot:/cert \
 fullaxx/webstore
 ```
-
-## Client Examples using docker
-You can test the client docker images against a running server instance \
-The test server is hosted at webstore.dspi.org on ports 80 and 443:
-```
-docker run -it -e WSHOST=webstore.dspi.org -e WSPORT=80 -e ALG=1 -e MSG=test fullaxx/webstore-post
-docker run -it -e WSHOST=webstore.dspi.org -e WSPORT=80 -e TOKEN=098f6bcd4621d373cade4e832627b4f6 fullaxx/webstore-get
-```
-The same example using https:
-```
-docker run -it -e HTTPS=1 -e WSHOST=webstore.dspi.org -e WSPORT=443 -e ALG=1 -e MSG=test fullaxx/webstore-post
-docker run -it -e HTTPS=1 -e WSHOST=webstore.dspi.org -e WSPORT=443 -e TOKEN=098f6bcd4621d373cade4e832627b4f6 fullaxx/webstore-get
-```
-
-## Client Instructions
-In order to use the client, you will need to compile against libcurl and libgcrypt \
-In Ubuntu, you would install build-essential ca-certificates libcurl4-gnutls-dev and libgcrypt20-dev \
-```
-apt-get install -y build-essential ca-certificates libcurl4-gnutls-dev libgcrypt20-dev
-./compile_clients.sh
-```
-After compiling the client source code, you can run the binaries:
-```
-WSHOST="172.17.0.1"
-WSPORT="80"
-./ws_post.exe -H ${WSHOST} -P ${WSPORT} -v -c -f LICENSE -a 1
-./ws_get.exe  -H ${WSHOST} -P ${WSPORT} -t b234ee4d69f5fce4486a80fdaf4a4263 -f LICENSE.copy
-md5sum LICENSE LICENSE.copy
-```
-If your webstore server is running in https mode:
-```
-WSHOST="172.17.0.1"
-WSPORT="443"
-./ws_post.exe -s -H ${WSHOST} -P ${WSPORT} -v -c -f LICENSE -a 1
-./ws_get.exe  -s -H ${WSHOST} -P ${WSPORT} -t b234ee4d69f5fce4486a80fdaf4a4263 -f LICENSE.copy
-md5sum LICENSE LICENSE.copy
-```
-
 ## Choosing an Algorithm
 Each webstore server instance has 6 nodes (defined in webstore_uhd.c) to GET/POST data to:
 ```
@@ -165,7 +171,6 @@ These algorithm types default to the following algorithms (defined in gchash.h):
 384 bits - sha384
 512 bits - sha512
 ```
-
 ## URL Creation
 Examples of proper URL creation (handled in webstore_url.h) are shown here:
 ```
