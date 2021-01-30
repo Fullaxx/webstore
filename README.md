@@ -1,7 +1,7 @@
 # webstore
 A web-based arbitrary data storage/retrieval service and client built from
-* [libmicrohttpd](https://www.gnu.org/software/libmicrohttpd/) \
-* [libgcrypt](https://gnupg.org/software/libgcrypt/index.html) \
+* [libmicrohttpd](https://www.gnu.org/software/libmicrohttpd/) 
+* [libgcrypt](https://gnupg.org/software/libgcrypt/index.html) 
 * [redis](https://redis.io/)
 
 Webstore consists of 3 components (server, GET client, POST client) which you can compile yourself
