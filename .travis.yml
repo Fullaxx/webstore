@@ -1,0 +1,19 @@
+dist: focal
+sudo: false
+language: c
+#env:
+#  matrix:
+#    - VALGRIND=On SANITIZERS=Off
+#    - VALGRIND=Off SANITIZERS=Off
+#    - VALGRIND=Off SANITIZERS=On
+compiler:
+  - gcc
+addons:
+  apt:
+    packages:
+      - libmicrohttpd-dev
+      - libhiredis-dev
+script:
+  - cd src
+  - ./compile_server.sh
+  - ./compile_clients.sh
