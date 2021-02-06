@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.com/Fullaxx/webstore.svg?branch=master)](https://travis-ci.com/Fullaxx/webstore)
 # Webstore
 A web-based arbitrary data storage/retrieval service built from
 * [libmicrohttpd](https://www.gnu.org/software/libmicrohttpd/) 
@@ -22,7 +23,7 @@ docker pull fullaxx/webstore-get
 docker pull fullaxx/webstore-post
 ```
 
-## Or Build it locally using the github repository
+## Build it locally using the github repository
 ```
 docker build -f Dockerfile.webstore -t="fullaxx/webstore"      github.com/Fullaxx/webstore
 docker build -f Dockerfile.wsget    -t="fullaxx/webstore-get"  github.com/Fullaxx/webstore
