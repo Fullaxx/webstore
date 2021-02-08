@@ -163,8 +163,15 @@ size_t Z85_encode_with_padding_bound(size_t size)
 
 size_t Z85_decode_with_padding_bound(const char* source, size_t size)
 {
-   if (size == 0 || !source || (byte)(source[0] - '0' - 1) > 3) return 0;
-   return Z85_decode_bound(size - 1) - 4 + (source[0] - '0');
+	byte pad;
+	size_t bound;
+
+	if (size == 0 || !source) return 0;
+	pad = (unsigned)(source[0] - '0');
+	if((unsigned)(pad-1) > 3) return 0;
+	bound = Z85_decode_bound(size - 1);
+	if(bound + pad < 4) return 0;
+	return bound + pad - 4;
 }
 
 size_t Z85_encode_with_padding(const char* source, char* dest, size_t inputSize)
