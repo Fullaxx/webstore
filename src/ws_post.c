@@ -93,19 +93,18 @@ static char* encode_msg(char *msg, size_t len)
 #ifdef MINIZ_COMPRESSION
 	md_t *mz = NULL;
 
-	// Shall we compress this data?
-	if(g_comp) {
-		if(g_verbosity >= 2) { printf("Compressing: %lu bytes\n", len); }
+	if(g_comp) {	// Shall we compress this data?
 		mz = mza_squash((unsigned char *)msg, len);
-		if(!mz) { fprintf(stderr, "mza_squash() returned NULL!"); return NULL; }
-		if((!mz->comp_data) || (!mz->comp_len)) {
-			fprintf(stderr, "mza_squash() failed!");
-			mza_free(mz);
-			return NULL;
+		if((mz) && (mz->comp_data) && (mz->comp_len)) {
+			if(mz->comp_len < len) {
+				// If compression is beneficial
+				if(g_verbosity >= 2) { printf("Using Compression: (%lu < %lu)\n", mz->comp_len, len); }
+				msg = (char *)mz->comp_data;
+				len = mz->comp_len;
+			}/* else {
+				if(g_verbosity >= 2) { printf("Original Size: %lu bytes\n", len); }
+			}*/
 		}
-
-		msg = (char *)mz->comp_data;
-		len = mz->comp_len;
 	}
 #endif
 
@@ -200,7 +199,7 @@ struct options opts[] =
 	{  6, "token",		"Use this token when posting",	"t", 1 },
 	{  7, "https",		"Use HTTPS",					"s", 0 },
 #ifdef MINIZ_COMPRESSION
-	{  8, "comp",		"Use compression",				"c", 0 },
+	{  8, "comp",		"Attempt compression",			"c", 0 },
 #endif
 	{ 10, "quiet",		"Decrease verbosity",			"q", 0 },
 	{ 11, "verbose",	"Increase verbosity",			"v", 0 },
