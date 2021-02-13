@@ -40,6 +40,7 @@ typedef struct {
 	int multithreaded;
 	int reqperiod;
 	long reqcount;
+	long max_post_data_size;
 	long expiration;
 	int immutable;
 	int bar;
@@ -71,5 +72,6 @@ char* node224(char *, int, srci_t *, void *, void *);
 char* node256(char *, int, srci_t *, void *, void *);
 char* node384(char *, int, srci_t *, void *, void *);
 char* node512(char *, int, srci_t *, void *, void *);
+char* nodecfg(char *, int, srci_t *, void *, void *);
 
 #endif

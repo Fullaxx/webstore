@@ -452,3 +452,61 @@ char* node512(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node
 
 	return page;
 }
+
+char* nodecfg(char *url, int urllen, srci_t *ri, void *sri_user_data, void *node_user_data)
+{
+	wsrt_t *rt;
+	int maxuploadsize = 0;
+	int expiration = 0;
+	int immutable = 0;
+	int bar = 0;
+	int n = 0;
+	char page[128*4];
+
+	if(shutting_down()) { return shutdownmsg(ri); }
+	rt = (wsrt_t *)sri_user_data;
+
+	if(METHOD(ri) != METHOD_GET) {
+		srci_set_return_code(ri, MHD_HTTP_METHOD_NOT_ALLOWED);
+		log_add(WSLOG_WARN, "%s %d METHOD_NOT_ALLOWED", srci_get_client_ip(ri), ri->return_code);
+		return strdup("method not allowed");
+	}
+
+	memset(page, 0, sizeof(page));
+	if(strcmp(url, "all") == 0) {
+		maxuploadsize = 1;
+		expiration = 1;
+		immutable = 1;
+		bar = 1;
+	} else {
+		if(strcmp(url, "maxuploadsize") == 0) { maxuploadsize = 1; }
+		if(strcmp(url, "expiration") == 0) { expiration = 1; }
+		if(strcmp(url, "immutable") == 0) { immutable = 1; }
+		if(strcmp(url, "bar") == 0) { bar = 1; }
+	}
+
+	if(maxuploadsize + expiration + immutable + bar == 0) {
+		srci_set_return_code(ri, MHD_HTTP_NOT_FOUND);
+		snprintf(page, sizeof(page), "Unknown Config Option: %s\n", url);
+		return strdup(page);
+	}
+
+	if(maxuploadsize) {
+		n += snprintf(page+n, sizeof(page)-n, "MAXUPLOADSIZE: %ld bytes\n", rt->max_post_data_size);
+	}
+
+	if(expiration) {
+		n += snprintf(page+n, sizeof(page)-n, "EXPIRATION: %ld seconds\n", rt->expiration);
+	}
+
+	if(immutable) {
+		n += snprintf(page+n, sizeof(page)-n, "IMMUTABLE: %d\n", rt->immutable);
+	}
+
+	if(bar) {
+		n += snprintf(page+n, sizeof(page)-n, "BAR: %d\n", rt->bar);
+	}
+
+	srci_set_return_code(ri, MHD_HTTP_OK);
+	return strdup(page);
+}

@@ -16,6 +16,12 @@ DBGCFLAGS="${CFLAGS} ${DBG}"
 
 rm -f *.exe *.dbg
 
+gcc ${OPTCFLAGS} ws_cfg.c curl_ops.c getopts.c \
+${CURLLIBS} -o ws_cfg.exe
+
+gcc ${DBGCFLAGS} ws_cfg.c curl_ops.c getopts.c \
+${CURLLIBS} -o ws_cfg.dbg
+
 gcc ${OPTCFLAGS} ws_get.c curl_ops.c z85.c compression.c getopts.c \
 ${CURLLIBS} -o ws_get.exe
 

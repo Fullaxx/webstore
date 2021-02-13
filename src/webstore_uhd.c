@@ -101,8 +101,10 @@ void webstore_start(srv_opts_t *so)
 	}
 
 	// Initialize the server
-	g_srv = searest_new(32+11, 128+11, so->max_post_data_size);
-	searest_node_add(g_srv, "/store/128/",	&node128, NULL);
+	g_rt.max_post_data_size = so->max_post_data_size;
+	g_srv = searest_new(8+3, 128+11, so->max_post_data_size);
+	searest_node_add(g_srv, "/config/",		&nodecfg, NULL);	// 8+3
+	searest_node_add(g_srv, "/store/128/",	&node128, NULL);	// 32+11
 	searest_node_add(g_srv, "/store/160/",	&node160, NULL);
 	searest_node_add(g_srv, "/store/224/",	&node224, NULL);
 	searest_node_add(g_srv, "/store/256/",	&node256, NULL);
