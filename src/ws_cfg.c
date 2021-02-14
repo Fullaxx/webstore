@@ -22,8 +22,6 @@
 #include <unistd.h>
 
 #include "getopts.h"
-//#include "webstore.h"
-//#include "webstore_url.h"
 #include "curl_ops.h"
 
 static void parse_args(int argc, char **argv);
