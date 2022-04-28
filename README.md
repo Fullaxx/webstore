@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.com/Fullaxx/webstore.svg?branch=master)](https://travis-ci.com/Fullaxx/webstore)
 # Webstore
 A web-based arbitrary data storage/retrieval service built from
 * [libmicrohttpd](https://www.gnu.org/software/libmicrohttpd/) 
