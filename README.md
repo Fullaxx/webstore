@@ -1,4 +1,4 @@
-# Webstore
+# Webstore [![Actions Status](https://github.com/Fullaxx/webstore/workflows/CI/badge.svg)](https://github.com/Fullaxx/webstore/actions)
 A web-based arbitrary data storage/retrieval service built from
 * [libmicrohttpd](https://www.gnu.org/software/libmicrohttpd/) 
 * [libgcrypt](https://gnupg.org/software/libgcrypt/index.html) 
