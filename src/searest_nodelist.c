@@ -1,6 +1,6 @@
 /*
 	SeaRest is a RESTFul service framework leveraging libmicrohttpd
-	Copyright (C) 2021 Brett Kuskie <fullaxx@gmail.com>
+	Copyright (C) 2022 Brett Kuskie <fullaxx@gmail.com>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@ srn_t* searest_node_find(sri_t *ws, char *rootname)
 	srn_t *cursor;
 	srn_t *answer = NULL;
 
+//	LOCK
 	nl_lock();
 
 	cursor = ws->nodelist_head;
@@ -44,6 +45,8 @@ srn_t* searest_node_find(sri_t *ws, char *rootname)
 	}
 
 	nl_unlock();
+//	UNLOCK
+
 	return answer;
 }
 
@@ -68,11 +71,13 @@ long searest_node_get_avg_duration(sri_t *ws, char *rootname)
 	n = searest_node_find(ws, rootname);
 	if(!n) { return -1; }
 
+//	LOCK
 	nl_lock();
 	if(n->statsready) {
 		for(i=0; i<TIMESLOTS; i++) { total += n->da[i]; }
 	}
 	nl_unlock();
+//	UNLOCK
 
 	return (total / TIMESLOTS);
 }
@@ -81,11 +86,13 @@ void searest_node_save_time(srn_t *n, long duration)
 {
 	int i;
 
+//	LOCK
 	nl_lock();
 	i = (n->dai++ % TIMESLOTS);
 	n->da[i] = duration;
 	if((n->dai > 1) && (i == 0)) { n->statsready = 1; }
 	nl_unlock();
+//	UNLOCK
 }
 #endif
 
@@ -121,6 +128,7 @@ int searest_node_add(sri_t *ws, char *rootname, void *func, void *node_user_data
 	if(!rootname) { return 1; }
 	if(!func) { return 2; }
 
+//	LOCK
 	nl_lock();
 
 	cursor = ws->nodelist_head;
@@ -141,6 +149,8 @@ int searest_node_add(sri_t *ws, char *rootname, void *func, void *node_user_data
 	cursor->nud = node_user_data;
 
 	nl_unlock();
+//	UNLOCK
+
 	return 0;
 }
 
@@ -149,6 +159,7 @@ void searest_node_destroy_all(sri_t *ws)
 	srn_t *prev;
 	srn_t *cursor;
 
+//	LOCK
 	nl_lock();
 
 	cursor = ws->nodelist_head;
@@ -161,6 +172,7 @@ void searest_node_destroy_all(sri_t *ws)
 	}
 
 	nl_unlock();
+//	UNLOCK
 }
 
 unsigned int searest_node_count(sri_t *ws)
@@ -168,6 +180,7 @@ unsigned int searest_node_count(sri_t *ws)
 	srn_t *cursor;
 	unsigned int retval = 0;
 
+//	LOCK
 	nl_lock();
 
 	cursor = ws->nodelist_head;
@@ -177,5 +190,7 @@ unsigned int searest_node_count(sri_t *ws)
 	}
 
 	nl_unlock();
+//	UNLOCK
+
 	return retval;
 }

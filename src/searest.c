@@ -1,6 +1,6 @@
 /*
 	SeaRest is a RESTFul service framework leveraging libmicrohttpd
-	Copyright (C) 2021 Brett Kuskie <fullaxx@gmail.com>
+	Copyright (C) 2022 Brett Kuskie <fullaxx@gmail.com>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -284,7 +284,7 @@ const char *upload_data, size_t *upload_data_size, void **con_cls)
 		// What if the caller never set return code with srci_set_return_code() ?
 		// it would appear that UHD will just hang and keep the connection open ?
 		// Set return_code to OK and move on
-		if(ri->return_code == 0) ri->return_code = MHD_HTTP_OK;
+		if(ri->return_code == 0) { ri->return_code = MHD_HTTP_OK; }
 
 		// This will only work with text, modify this for binary file transfer
 		response = MHD_create_response_from_buffer(strlen(page), page, MHD_RESPMEM_MUST_COPY);
