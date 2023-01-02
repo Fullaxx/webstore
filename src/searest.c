@@ -196,7 +196,7 @@ static char* process_request(sri_t *ws, srci_t *ri, void *sri_user_data)
  *
  */
 
-static int uhd_request_started (void *sri_user_data, struct MHD_Connection *connection,
+static enum MHD_Result uhd_request_started (void *sri_user_data, struct MHD_Connection *connection,
 const char *url, const char *method, const char *version,
 const char *upload_data, size_t *upload_data_size, void **con_cls)
 {
@@ -338,7 +338,7 @@ static void* uhd_logger (void *user_data, const char *uri)
 	return NULL;	//this becomes the value of *con_cls in request_started
 }
 
-static int uhd_client_connect (void *user_data, const struct sockaddr *addr, socklen_t addrlen)
+static enum MHD_Result uhd_client_connect (void *user_data, const struct sockaddr *addr, socklen_t addrlen)
 {
 	struct sockaddr_in *in = (struct sockaddr_in *)addr;
 	sri_t *ws = user_data;
